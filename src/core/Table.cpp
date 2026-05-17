@@ -20,8 +20,8 @@ Table::Table(const size_t rows, const size_t cols)
 
 void Table::setCell(const size_t row, const size_t col, const Cell *cell)
 {
-    if (row >= rows || col >= cols)
-        return;
+    if (row >= rows) throw std::out_of_range("Row index is out of range.");
+    if (col >= cols) throw std::out_of_range("Column index is out of range.");
 
     const size_t cell_index = rows * col + row;
 

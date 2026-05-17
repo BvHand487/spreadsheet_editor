@@ -55,7 +55,7 @@ Cell* CellFactory::create_cell(const Type type, const std::string &text)
     switch (type)
     {
         case None: return nullptr;
-        case Int: return new IntegerCell(std::atoi(text.c_str()));
+        case Int: return new IntegerCell(std::stoi(text));
         case String: return new StringCell(text);
         case Date: return new DateCell(1, 1, 1900);
     }

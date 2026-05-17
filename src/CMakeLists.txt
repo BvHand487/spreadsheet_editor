@@ -14,3 +14,4 @@ target_include_directories(spreadsheet_editor_core
 
 add_executable(spreadsheet_app main.cpp)
 target_link_libraries(spreadsheet_app PRIVATE spreadsheet_editor_core)
+target_link_options(spreadsheet_app PRIVATE "-static-libgcc" "-static-libstdc++" "-static")

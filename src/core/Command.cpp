@@ -1,6 +1,15 @@
 #include "Command.h"
+#include "Parser.h"
 #include "Table.h"
 
+
+void HelpCommand::execute()
+{
+    std::cout << "Available commands:\n";
+
+    for (const auto& command: this->parser.getRegisteredCommands())
+        std::cout << "- " << command << '\n';
+}
 
 void QuitCommand::execute()
 {
@@ -52,4 +61,13 @@ void PrintCommand::execute()
     std::cout.flags(original_flags);
     std::cout.fill(original_fill);
     std::cout << std::flush;
+}
+
+void EditCellCommand::execute()
+{
+    const Cell *temp = CellFactory::create_cell(CellFactory::Type::Int, value);
+
+    this->table.setCell(row, column, temp);
+
+    delete temp;
 }

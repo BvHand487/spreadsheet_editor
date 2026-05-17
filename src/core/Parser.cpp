@@ -29,7 +29,7 @@ CommandParser::Node& CommandParser::Node::operator=(Node node)
 CommandParser::Node* CommandParser::Node::findChild(const std::string &lexeme) const
 {
     for (auto* child : children)
-        if (child && child->lexeme == lexeme)
+        if (child && (child->lexeme == lexeme || child->lexeme == CommandParser::VARIABLE_KEYWORD))
             return child;
 
     return nullptr;
@@ -61,6 +61,32 @@ CommandParser::Node::~Node()
 {
     for (const auto child : children)
         delete child;
+}
+
+std::vector<std::string> CommandParser::getRegisteredCommands() const
+{
+    std::vector<std::string> commands;
+    getRegisteredCommandsHelper(&root, commands);
+    return commands;
+}
+
+void CommandParser::getRegisteredCommandsHelper(const Node *current, std::vector<std::string> &commands, const std::string& currentPath) const
+{
+    if (current == nullptr)
+        return;
+
+    if (current->isTerminal())
+        commands.push_back(currentPath);
+
+    for (const auto child: current->getChildren())
+    {
+        std::string branch;
+
+        if (!currentPath.empty()) branch += " ";
+        branch += child->getLexeme();
+
+        getRegisteredCommandsHelper(child, commands, currentPath + branch);
+    }
 }
 
 void CommandParser::registerCommand(const std::string &text, const CommandAction& action)
@@ -99,6 +125,29 @@ Command* CommandParser::parse(const std::string &text) const
     const CommandAction action = current->getAction();
     return action ? action(args) : nullptr;
 }
+
+int CommandParser::parse_int(const std::string &text)
+{
+    const int result = std::stoi(text);
+    return result;
+}
+
+unsigned int CommandParser::parse_uint(const std::string &text)
+{
+    const unsigned int result = std::stoul(text);
+    return result;
+}
+
+float CommandParser::parse_float(const std::string &text)
+{
+    return std::stof(text);
+}
+
+std::filesystem::path CommandParser::parse_path(const std::string &text)
+{
+    return std::filesystem::path{ text };
+}
+
 
 void swap(CommandParser::Node &node1, CommandParser::Node &node2) noexcept
 {
