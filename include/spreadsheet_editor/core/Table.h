@@ -1,16 +1,8 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#include <chrono>
 #include <cmath>
-#include <cstring>
-#include <cstdlib>
-#include <ctime>
-#include <exception>
 #include <fstream>
-#include <iostream>
-#include <new>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -27,6 +19,7 @@ class Table
 public:
     Table();
     Table(size_t rows, size_t cols);
+    Table(Table &&table) noexcept : cells(std::move(table.cells)), rows(table.rows), cols(table.cols) {};
 
     [[nodiscard]] size_t getRows() const { return rows; };
     [[nodiscard]] size_t getCols() const { return cols; };

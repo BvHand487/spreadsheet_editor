@@ -1,11 +1,11 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#include <utility>
+
 #include "Table.h"
 
-// TODO: maybe remove
-// forward-declare CommandParser for HelpCommand
-class CommandParser;
+class Application;
 
 class Command {
 public:
@@ -14,32 +14,67 @@ public:
 };
 
 
-class HelpCommand final : public Command
+class SaveCommand final : public Command
 {
-    const CommandParser& parser;
+    const Application& ctx;
+    std::string path;
 
 public:
-    explicit HelpCommand(const CommandParser& parser) : parser(parser) {}
+    explicit SaveCommand(const Application& ctx, std::string path) :
+        ctx(ctx),
+        path(std::move(path)) {}
+    void execute() override;
+};
+
+class OpenCommand final : public Command
+{
+    Application& ctx;
+    std::string path;
+
+public:
+    explicit OpenCommand(Application& ctx, std::string path) :
+        ctx(ctx),
+        path(std::move(path)) {}
     void execute() override;
 };
 
 
-class QuitCommand final : public Command
+class HelpCommand final : public Command
 {
-    bool& running;
+    Application& ctx;
 
 public:
-    explicit QuitCommand(bool& running) : running(running) {}
+    explicit HelpCommand(Application& ctx) : ctx(ctx) {}
+    void execute() override;
+};
+
+
+// class HistoryCommand final : public Command
+// {
+//     Application& ctx;
+//
+// public:
+//     explicit HistoryCommand(Application& ctx) : ctx(ctx) {}
+//     void execute() override;
+// };
+
+
+class QuitCommand final : public Command
+{
+    Application& app;
+
+public:
+    explicit QuitCommand(Application& app) : app(app) {}
     void execute() override;
 };
 
 
 class PrintCommand final : public Command
 {
-    const Table& table;
+    const Table* table;
 
 public:
-    explicit PrintCommand(const Table& table) : table(table) {}
+    explicit PrintCommand(const Table* table) : table(table) {}
     void execute() override;
 };
 
@@ -47,17 +82,17 @@ public:
 class EditCellCommand final : public Command
 {
     // TODO: maybe change type of row/column to separate classes
-    Table& table;
+    Table* table;
     const size_t row;
     const size_t column;
-    const std::string& value;
+    std::string value;
 
 public:
-    explicit EditCellCommand(Table& table, const size_t row, const size_t column, const std::string& value) :
+    explicit EditCellCommand(Table* table, const size_t row, const size_t column, std::string value) :
         table(table),
         row(row),
         column(column),
-        value(value) {}
+        value(std::move(value)) {}
     void execute() override;
 };
 

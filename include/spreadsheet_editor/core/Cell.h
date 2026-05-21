@@ -1,26 +1,18 @@
 #ifndef CELL_H
 #define CELL_H
 
-#include <chrono>
-#include <cmath>
-#include <cstring>
-#include <cstdlib>
-#include <ctime>
-#include <exception>
-#include <fstream>
-#include <iostream>
-#include <new>
-#include <stdexcept>
+#include <cstdint>
 #include <string>
 #include <utility>
-#include <vector>
+
+#include "Formula.h"
 
 
 class Cell {
 public:
     [[nodiscard]] virtual Cell* clone() const = 0;
     [[nodiscard]] virtual std::string serialize() const = 0;
-    [[nodiscard]] virtual float asValue() const = 0;
+    [[nodiscard]] virtual double asValue() const = 0;
 
     friend std::ostream& operator<< (std::ostream& os, const Cell& cell)
     {
@@ -41,7 +33,7 @@ public:
 
     [[nodiscard]] IntegerCell* clone() const override;
     [[nodiscard]] std::string serialize() const override;
-    [[nodiscard]] float asValue() const override;
+    [[nodiscard]] double asValue() const override;
 };
 
 
@@ -55,7 +47,7 @@ public:
 
     [[nodiscard]] StringCell* clone() const override;
     [[nodiscard]] std::string serialize() const override;
-    [[nodiscard]] float asValue() const override;
+    [[nodiscard]] double asValue() const override;
 };
 
 
@@ -75,21 +67,31 @@ public:
 
     [[nodiscard]] DateCell* clone() const override;
     [[nodiscard]] std::string serialize() const override;
-    [[nodiscard]] float asValue() const override;
+    [[nodiscard]] double asValue() const override;
 };
 
 
-// class FormulaCell final : public Cell {
-// private:
-//     // ...
-//
-// public:
-//     FormulaCell(...) {}
-//
-//     [[nodiscard]] FormulaCell* clone() const override;
-//     [[nodiscard]] std::string serialize() const override;
-//     [[nodiscard]] float asValue() const override;
-// };
+class FormulaCell final : public Cell {
+    const FormulaASTNode* formula = nullptr;
+    mutable double cachedValue = 0;
+    mutable bool dirty = true;
+
+    void refresh() const
+    {
+        cachedValue = formula->evaluate();
+        dirty = false;
+    }
+
+public:
+    explicit FormulaCell(const FormulaASTNode* formula) : formula(formula) {}
+    FormulaCell(const FormulaCell& cell) : formula(cell.formula) {}
+
+    bool isDirty() const { return dirty == true; }
+
+    [[nodiscard]] FormulaCell* clone() const override;
+    [[nodiscard]] std::string serialize() const override;
+    [[nodiscard]] double asValue() const override;
+};
 
 
 class CellFactory
@@ -101,6 +103,7 @@ public:
         Int,
         String,
         Date,
+        Formula,
     };
 
     static Cell* create_cell(Type type, const std::string& text);

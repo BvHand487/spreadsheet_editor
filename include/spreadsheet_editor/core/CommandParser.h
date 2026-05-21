@@ -14,7 +14,8 @@ public:
     using CommandAction = std::function<Command*(const std::vector<std::string>&)>;
 
     constexpr static auto ROOT_KEYWORD = "root";
-    constexpr static auto VARIABLE_KEYWORD = "<var>";
+    constexpr static auto FIXED_ARG_KEYWORD = "<arg>";
+    constexpr static auto VARIABLE_ARGS_KEYWORD = "...";
 
     class Node
     {
@@ -37,6 +38,9 @@ public:
 
         void setLexeme(const std::string& lexeme) { this->lexeme = lexeme; }
         void setAction(const CommandAction &action) { this->action = action; }
+
+        [[nodiscard]] bool isFixedArg() const { return lexeme == FIXED_ARG_KEYWORD; }
+        [[nodiscard]] bool isVariableArg() const { return lexeme == VARIABLE_ARGS_KEYWORD; }
 
         [[nodiscard]] bool isTerminal() const { return action != nullptr; } // checks if it's a valid ending for a command
         [[nodiscard]] bool isLeaf() const { return children.empty(); }
@@ -61,11 +65,6 @@ public:
 
     void registerCommand(const std::string& text, const CommandAction& action);
     [[nodiscard]] Command* parse(const std::string& text) const;
-
-    static int parse_int(const std::string& text);
-    static unsigned int parse_uint(const std::string& text);
-    static float parse_float(const std::string& text);
-    static std::filesystem::path parse_path(const std::string& text);
 
 private:
 

@@ -1,21 +1,40 @@
 #include "Command.h"
-#include "Parser.h"
+
+#include <iostream>
+
+#include "Application.h"
+#include "CommandParser.h"
 #include "Table.h"
+#include "TableSerializer.h"
 
 
-void HelpCommand::execute()
-{
+void SaveCommand::execute() {
+    TableSerializer::saveToFile(ctx.getActiveTable(), path);
+}
+
+void OpenCommand::execute() {
+    Table *table = TableSerializer::loadFromFile(path);
+    ctx.setActiveTable(table);
+}
+
+void HelpCommand::execute() {
     std::cout << "Available commands:\n";
 
-    for (const auto& command: this->parser.getRegisteredCommands())
+    for (const auto& command: this->ctx.getCommandParser().getRegisteredCommands())
         std::cout << "- " << command << '\n';
 }
 
-void QuitCommand::execute()
-{
-    running = false;
-}
+// void HistoryCommand::execute()
+// {
+//     std::cout << "Command history:\n";
+//
+//     for (const auto& command: this->ctx.getCommandHistory())
+//         std::cout << command << '\n';
+// }
 
+void QuitCommand::execute() { app.quit(); }
+
+// TODO: fix this mess
 void PrintCommand::execute()
 {
     std::ios_base::fmtflags original_flags = std::cout.flags();
@@ -25,7 +44,7 @@ void PrintCommand::execute()
 
     for (size_t col = 0; col < 5; ++col)
     {
-        auto columnCells = table.getColumn(col);
+        auto columnCells = table->getColumn(col);
         size_t max_length = 0;
         for (size_t row = 0; row < 5; ++row)
         {
@@ -42,7 +61,7 @@ void PrintCommand::execute()
     {
         for (size_t col = 0; col < 5; ++col)
         {
-            const auto cell = table.getCell(row, col);
+            const auto cell = table->getCell(row, col);
 
             size_t current_width = width_array[col] + 2;
             if (width_array[col] == 0) current_width = 3;
@@ -65,9 +84,7 @@ void PrintCommand::execute()
 
 void EditCellCommand::execute()
 {
-    const Cell *temp = CellFactory::create_cell(CellFactory::Type::Int, value);
-
-    this->table.setCell(row, column, temp);
-
+    const Cell *temp = CellFactory::create_cell_auto(value);
+    this->table->setCell(row, column, temp);
     delete temp;
 }

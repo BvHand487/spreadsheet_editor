@@ -1,4 +1,4 @@
-#include "Parser.h"
+#include "CommandParser.h"
 #include "Utility.h"
 
 
@@ -28,8 +28,14 @@ CommandParser::Node& CommandParser::Node::operator=(Node node)
 
 CommandParser::Node* CommandParser::Node::findChild(const std::string &lexeme) const
 {
+    // check directly
     for (auto* child : children)
-        if (child && (child->lexeme == lexeme || child->lexeme == CommandParser::VARIABLE_KEYWORD))
+        if (child && (child->lexeme == lexeme))
+            return child;
+
+    // check for args
+    for (auto* child : children)
+        if (child && (child->isFixedArg() || child->isVariableArg()))
             return child;
 
     return nullptr;
@@ -118,36 +124,21 @@ Command* CommandParser::parse(const std::string &text) const
         current = current->findChild(token);
         if (current == nullptr) return nullptr;
 
-        if (current->getLexeme() == VARIABLE_KEYWORD)
+        if (current->isFixedArg())
+        {
             args.push_back(token);
+        }
+        else if (current->isVariableArg())
+        {
+            const size_t pos = text.find(token);
+            args.push_back(text.substr(pos));
+            break;
+        }
     }
 
     const CommandAction action = current->getAction();
     return action ? action(args) : nullptr;
 }
-
-int CommandParser::parse_int(const std::string &text)
-{
-    const int result = std::stoi(text);
-    return result;
-}
-
-unsigned int CommandParser::parse_uint(const std::string &text)
-{
-    const unsigned int result = std::stoul(text);
-    return result;
-}
-
-float CommandParser::parse_float(const std::string &text)
-{
-    return std::stof(text);
-}
-
-std::filesystem::path CommandParser::parse_path(const std::string &text)
-{
-    return std::filesystem::path{ text };
-}
-
 
 void swap(CommandParser::Node &node1, CommandParser::Node &node2) noexcept
 {
