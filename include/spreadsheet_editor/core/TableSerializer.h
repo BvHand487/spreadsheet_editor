@@ -6,8 +6,8 @@
 class TableSerializer
 {
 public:
-    static Table* loadFromFile(const std::string& file_name, char delimiter = ',');
-    static void saveToFile(Table* table, const std::string& file_name, char delimiter = ',');
+    static Table* loadFromFile(const std::string& filename, char delimiter = ',');
+    static void saveToFile(const Table* table, const std::string& filename, char delimiter = ',');
 };
 
 #endif //TABLESERIALIZER_H

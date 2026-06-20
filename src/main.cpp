@@ -30,6 +30,14 @@ int main()
 
         return new EditCellCommand(app.getActiveTable(), row, column, args[2]);
     });
+    
+    parser.registerCommand("save as ...", [&](const std::vector<std::string>& args) {
+        return new SaveAsCommand(app, args[0]);
+    });
+
+    parser.registerCommand("save", [&](const std::vector<std::string>&) {
+        return new SaveCommand(app);
+    });
 
     app.run();
 

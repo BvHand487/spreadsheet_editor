@@ -1,37 +1,84 @@
 #include "Table.h"
 
+#include <stdexcept>
+
+
+constexpr void Table::validate_coords(const size_t row, const size_t col)
+{
+    if (row > MAX_ROWS) throw std::logic_error("Row exceeds the maximum number of rows.");
+    if (col > MAX_COLS) throw std::logic_error("Column exceeds the maximum number of cols.");
+}
+
+void Table::reserve(const size_t newRowCapacity, const size_t newColCapacity)
+{
+    const size_t actualRows = std::max(rowsCapacity, newRowCapacity);
+    const size_t actualCols = std::max(colsCapacity, newColCapacity);
+
+    // no need to continue
+    if (actualRows <= rowsCapacity && actualCols <= colsCapacity)
+        return;
+
+    std::vector<Cell *> newCells(actualRows * actualCols, nullptr);
+
+    for (size_t row = 0; row < rows; row++)
+    {
+        for (size_t col = 0; col < cols; col++)
+        {
+            const size_t oldIndex = col * rowsCapacity + row;
+            const size_t newIndex = col * actualRows + row;
+
+            newCells[newIndex] = cells[oldIndex];
+        }
+    }
+
+    cells = std::move(newCells);
+    rowsCapacity = actualRows;
+    colsCapacity = actualCols;
+}
+
 Table::Table()
 {
-    this->rows = DEFAULT_ROWS;
-    this->cols = DEFAULT_COLS;
-
-    cells = std::vector<Cell*>();
-    cells.resize(rows * cols);
+    reserve(rowsCapacity, colsCapacity);
 }
 
 Table::Table(const size_t rows, const size_t cols)
 {
-    this->rows = rows;
-    this->cols = cols;
-
-    cells = std::vector<Cell*>();
-    cells.resize(rows * cols);
+    validate_coords(rows, cols);
+    reserve(rows, cols);
 }
 
 void Table::setCell(const size_t row, const size_t col, const Cell *cell)
 {
-    if (row >= rows) throw std::out_of_range("Row index is out of range.");
-    if (col >= cols) throw std::out_of_range("Column index is out of range.");
+    validate_coords(row, col);
 
-    const size_t cell_index = rows * col + row;
+    // if we need to grow
+    if (row >= rowsCapacity || col >= colsCapacity)
+    {
+        const size_t targetRows = std::min(
+            std::max(rowsCapacity * 2, row + 1),
+            MAX_ROWS
+        );
+
+        const size_t targetCols = std::min(
+            std::max(colsCapacity * 2, col + 1),
+            MAX_COLS
+        );
+
+        reserve(targetRows, targetCols);
+    }
+
+    this->rows = std::max(this->rows, row + 1);
+    this->cols = std::max(this->cols, col + 1);
+
+    const size_t cell_index = rowsCapacity * col + row;
 
     delete cells[cell_index];
-    cells[cell_index] = cell->clone();
+    cells[cell_index] = cell == nullptr ? nullptr : cell->clone();
 }
 
 Cell* Table::getCell(const size_t row, const size_t col) const
 {
-    return cells[rows * col + row];
+    return cells[rowsCapacity * col + row];
 }
 
 std::vector<Cell*> Table::getRow(const size_t row) const
@@ -61,5 +108,5 @@ Table::~Table()
 {
     for (size_t col = 0; col < cols; col++)
         for (size_t row = 0; row < rows; row++)
-            delete cells[row * cols + col];
+            delete cells[rowsCapacity * cols + col];
 }

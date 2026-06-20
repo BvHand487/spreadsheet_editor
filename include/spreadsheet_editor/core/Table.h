@@ -2,7 +2,6 @@
 #define TABLE_H
 
 #include <cmath>
-#include <fstream>
 #include <string>
 #include <vector>
 
@@ -10,16 +9,24 @@
 
 class Table
 {
-    static constexpr size_t DEFAULT_ROWS = 100;
-    static constexpr size_t DEFAULT_COLS = 100;
-
-    std::vector<Cell *> cells;
     size_t rows = 0, cols = 0;
+    size_t rowsCapacity = 0, colsCapacity = 0;
+    std::vector<Cell *> cells{};
+
+    // reserves memory for the cells with new row/col capacity
+    void reserve(size_t newRowCapacity, size_t newColCapacity);
 
 public:
+    static constexpr size_t MAX_ROWS = 50;
+    static constexpr size_t MAX_COLS = 50;
+    static constexpr void validate_coords(size_t row, size_t col);
+
     Table();
     Table(size_t rows, size_t cols);
-    Table(Table &&table) noexcept : cells(std::move(table.cells)), rows(table.rows), cols(table.cols) {};
+    Table(Table &&table) = delete;
+    Table(const Table &table) = delete;
+    Table& operator= (Table &&table) noexcept = delete;
+    Table& operator= (const Table &table) = delete;
 
     [[nodiscard]] size_t getRows() const { return rows; };
     [[nodiscard]] size_t getCols() const { return cols; };
@@ -32,5 +39,6 @@ public:
 
     ~Table();
 };
+
 
 #endif //TABLE_H

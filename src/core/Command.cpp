@@ -8,8 +8,26 @@
 #include "TableSerializer.h"
 
 
-void SaveCommand::execute() {
-    TableSerializer::saveToFile(ctx.getActiveTable(), path);
+void SaveCommand::execute()
+{
+    if (ctx.getActiveTable() == nullptr)
+        throw std::logic_error("There is no active table to save.");
+
+    const std::string& filepath = ctx.getActiveSavePath();
+    if (filepath.empty())
+        throw std::logic_error("There is no saved path.");
+
+    TableSerializer::saveToFile(ctx.getActiveTable(), filepath);
+}
+
+void SaveAsCommand::execute()
+{
+    if (ctx.getActiveTable() == nullptr)
+        throw std::logic_error("There is no active table to save.");
+
+    TableSerializer::saveToFile(ctx.getActiveTable(), this->path);
+
+    ctx.setActiveSavePath(this->path);
 }
 
 void OpenCommand::execute() {
@@ -40,13 +58,13 @@ void PrintCommand::execute()
     std::ios_base::fmtflags original_flags = std::cout.flags();
     char original_fill = std::cout.fill();
 
-    size_t width_array[5] = { 0 };
+    size_t width_array[Table::MAX_COLS] = { 0 };
 
-    for (size_t col = 0; col < 5; ++col)
+    for (size_t col = 0; col < table->getCols(); ++col)
     {
         auto columnCells = table->getColumn(col);
         size_t max_length = 0;
-        for (size_t row = 0; row < 5; ++row)
+        for (size_t row = 0; row < table->getRows(); ++row)
         {
             if (!columnCells[row]) continue;
 
@@ -57,9 +75,9 @@ void PrintCommand::execute()
         width_array[col] = max_length;
     }
 
-    for (size_t row = 0; row < 5; ++row)
+    for (size_t row = 0; row < table->getRows(); ++row)
     {
-        for (size_t col = 0; col < 5; ++col)
+        for (size_t col = 0; col < table->getCols(); ++col)
         {
             const auto cell = table->getCell(row, col);
 

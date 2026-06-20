@@ -17,10 +17,19 @@ public:
 class SaveCommand final : public Command
 {
     const Application& ctx;
+
+public:
+    explicit SaveCommand(const Application& ctx) : ctx(ctx) {}
+    void execute() override;
+};
+
+class SaveAsCommand final : public Command
+{
+    Application& ctx;
     std::string path;
 
 public:
-    explicit SaveCommand(const Application& ctx, std::string path) :
+    explicit SaveAsCommand(Application& ctx, std::string path) :
         ctx(ctx),
         path(std::move(path)) {}
     void execute() override;
