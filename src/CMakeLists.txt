@@ -1,11 +1,12 @@
 add_library(spreadsheet_editor_core
     core/Cell.cpp
-    core/Command.cpp
-    core/CommandParser.cpp
+    core/Table.cpp
+    core/TableFormatting.cpp
+    core/TableSerializer.cpp
     core/Formula.cpp
     core/FormulaParser.cpp
-    core/Table.cpp
-    core/TableSerializer.cpp
+    core/Command.cpp
+    core/CommandParser.cpp
     core/Utility.cpp
 )
 

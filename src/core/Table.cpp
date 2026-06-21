@@ -38,7 +38,8 @@ void Table::reserve(const size_t newRowCapacity, const size_t newColCapacity)
 
 Table::Table()
 {
-    reserve(rowsCapacity, colsCapacity);
+    // reserve space for a 5x5 table by default
+    reserve(5, 5);
 }
 
 Table::Table(const size_t rows, const size_t cols)
@@ -74,6 +75,11 @@ void Table::setCell(const size_t row, const size_t col, const Cell *cell)
 
     delete cells[cell_index];
     cells[cell_index] = cell == nullptr ? nullptr : cell->clone();
+
+    // notify onCellChange
+    for (const auto& listener : listeners)
+        if (listener)
+            listener->onCellChange(row, col, cell);
 }
 
 Cell* Table::getCell(const size_t row, const size_t col) const
@@ -103,6 +109,28 @@ std::vector<Cell*> Table::getColumn(const size_t col) const
 
     return colCells;
 }
+
+
+void Table::subscribe(TableObserver *listener)
+{
+    if (listener)
+        listeners.push_back(listener);
+}
+
+void Table::unsubscribe(const TableObserver *listener)
+{
+    if (listener)
+    {
+        for (auto iter = listeners.begin(); iter != listeners.end();)
+        {
+            if (*iter == listener)
+                listeners.erase(iter);
+            else
+                ++iter;
+        }
+    }
+}
+
 
 Table::~Table()
 {

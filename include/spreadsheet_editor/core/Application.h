@@ -7,11 +7,11 @@
 class Application
 {
     bool running = true;
-    Table *activeTable = nullptr;
-    std::string activeSavePath {};
 
-    // static constexpr size_t COMMAND_HISTORY_LENGTH = 128;
-    // std::vector<Command *> cmdHistory;
+    Table *activeTable = nullptr;
+    TableLayout layout {};
+
+    std::string activeSavePath {};
     CommandParser cmdParser;
 
 public:
@@ -32,15 +32,14 @@ public:
     void quit() { running = false; };
 
     [[nodiscard]] Table* getActiveTable() const { return activeTable; };
-    void setActiveTable(Table* activeTable) { this->activeTable = activeTable; };
+    void setActiveTable(Table* newTable);
+
+    [[nodiscard]] const TableLayout& getLayout() const { return layout; };
 
     [[nodiscard]] const std::string& getActiveSavePath() const { return activeSavePath; };
     void setActiveSavePath(std::string savePath) { this->activeSavePath = std::move(savePath); };
 
     [[nodiscard]] CommandParser& getCommandParser() { return cmdParser; };
-
-    // std::vector<Command *>& getCommandHistory() { return cmdHistory; };
-    // void addCommandToHistory(Command *command);
 
     ~Application();
 };

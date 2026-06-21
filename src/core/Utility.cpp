@@ -20,9 +20,49 @@ std::vector<std::string> split(const std::string &text, const char delimiter)
     return tokens;
 }
 
+std::string getLine(const std::string &text, const size_t line)
+{
+    size_t lineCount = 0;
+    size_t lineStart = 0;
+
+    for (size_t i = 0; i < text.length(); ++i)
+    {
+        if (text[i] == '\n')
+        {
+            if (lineCount == line)
+                return text.substr(lineStart, i - lineStart);
+
+            lineStart = i + 1;
+            lineCount++;
+        }
+    }
+
+    if (lineCount == line)
+        return text.substr(lineStart);
+
+    return "";
+}
+
 std::string escape(const std::string &text)
 {
-    return "";
+    std::string result = "\"";
+    result.reserve(2 * text.size());
+
+    for (const char c : text)
+    {
+        switch (c)
+        {
+            case '\n': result += "\\n"; break;
+            case '\t': result += "\\t"; break;
+            case '"':  result += "\\\""; break;
+            case '\\': result += "\\\\"; break;
+            default:
+                result += c;
+        }
+    }
+
+    result += "\"";
+    return result;
 }
 
 std::string unescape(const std::string &text)

@@ -6,12 +6,16 @@
 #include <vector>
 
 #include "Cell.h"
+#include "TableFormatting.h"
+
 
 class Table
 {
     size_t rows = 0, cols = 0;
     size_t rowsCapacity = 0, colsCapacity = 0;
     std::vector<Cell *> cells{};
+
+    std::vector<TableObserver *> listeners{};
 
     // reserves memory for the cells with new row/col capacity
     void reserve(size_t newRowCapacity, size_t newColCapacity);
@@ -36,6 +40,9 @@ public:
 
     [[nodiscard]] std::vector<Cell*> getRow(size_t row) const;
     [[nodiscard]] std::vector<Cell*> getColumn(size_t col) const;
+
+    void subscribe(TableObserver *listener);
+    void unsubscribe(const TableObserver *listener);
 
     ~Table();
 };

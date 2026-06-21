@@ -11,9 +11,8 @@
 int main()
 {
     Application& app = Application::getInstance();
+    Table *const table = app.getActiveTable();
 
-    app.setActiveTable(new Table());
-    Table *table = app.getActiveTable();
     table->setCell(0, 0, CellFactory::create_cell(CellFactory::Int, "1"));
     table->setCell(0, 1, CellFactory::create_cell(CellFactory::Int, "1"));
     table->setCell(0, 2, CellFactory::create_cell(CellFactory::Formula, "= R0C0 + R0C1"));
@@ -21,7 +20,7 @@ int main()
     CommandParser& parser = app.getCommandParser();
 
     parser.registerCommand("print", [&](const std::vector<std::string>&) {
-        return new PrintCommand(app.getActiveTable());
+        return new PrintCommand(app);
     });
 
     parser.registerCommand("edit <arg> <arg> ...", [&](const std::vector<std::string>& args) {
@@ -30,7 +29,7 @@ int main()
 
         return new EditCellCommand(app.getActiveTable(), row, column, args[2]);
     });
-    
+
     parser.registerCommand("save as ...", [&](const std::vector<std::string>& args) {
         return new SaveAsCommand(app, args[0]);
     });

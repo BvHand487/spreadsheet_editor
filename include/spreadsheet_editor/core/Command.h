@@ -58,16 +58,6 @@ public:
 };
 
 
-// class HistoryCommand final : public Command
-// {
-//     Application& ctx;
-//
-// public:
-//     explicit HistoryCommand(Application& ctx) : ctx(ctx) {}
-//     void execute() override;
-// };
-
-
 class QuitCommand final : public Command
 {
     Application& app;
@@ -80,10 +70,10 @@ public:
 
 class PrintCommand final : public Command
 {
-    const Table* table;
+    const Application& app;
 
 public:
-    explicit PrintCommand(const Table* table) : table(table) {}
+    explicit PrintCommand(const Application& app) : app(app) {}
     void execute() override;
 };
 

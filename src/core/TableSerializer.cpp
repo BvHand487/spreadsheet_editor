@@ -23,7 +23,7 @@ void TableSerializer::saveToFile(const Table* table, const std::string &filename
         {
             Cell* cell = table->getCell(row, col);
             if (cell != nullptr)
-                file << *cell;
+                file << cell->serialize();
 
             if (col < table->getCols() - 1)
                 file << delimiter;

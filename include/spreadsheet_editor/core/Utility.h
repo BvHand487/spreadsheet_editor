@@ -9,6 +9,8 @@
 void split(const std::string &text, char delimiter, std::vector<std::string> &tokens);
 std::vector<std::string> split(const std::string &text, char delimiter);
 
+std::string getLine(const std::string &text, size_t line = 0);
+
 std::string escape(const std::string& text);
 std::string unescape(const std::string& text);
 

@@ -6,6 +6,7 @@
 #include "CommandParser.h"
 #include "Table.h"
 #include "TableSerializer.h"
+#include "Utility.h"
 
 
 void SaveCommand::execute()
@@ -42,14 +43,6 @@ void HelpCommand::execute() {
         std::cout << "- " << command << '\n';
 }
 
-// void HistoryCommand::execute()
-// {
-//     std::cout << "Command history:\n";
-//
-//     for (const auto& command: this->ctx.getCommandHistory())
-//         std::cout << command << '\n';
-// }
-
 void QuitCommand::execute() { app.quit(); }
 
 // TODO: fix this mess
@@ -58,41 +51,42 @@ void PrintCommand::execute()
     std::ios_base::fmtflags original_flags = std::cout.flags();
     char original_fill = std::cout.fill();
 
-    size_t width_array[Table::MAX_COLS] = { 0 };
+    const Table* table = app.getActiveTable();
 
-    for (size_t col = 0; col < table->getCols(); ++col)
+    if (table == nullptr)
+        throw std::logic_error("There is no active table to print.");
+
+    const size_t rows = table->getRows();
+    const size_t cols = table->getCols();
+    const TableLayout &layout = app.getLayout();
+
+    for (size_t row = 0; row < rows; row++)
     {
-        auto columnCells = table->getColumn(col);
-        size_t max_length = 0;
-        for (size_t row = 0; row < table->getRows(); ++row)
+        const size_t height = layout.getRowHeight(row);
+
+        for (size_t line = 0; line < height; line++)
         {
-            if (!columnCells[row]) continue;
+            for (size_t col = 0; col < cols; col++)
+            {
+                const size_t width = layout.getColWidth(col);
 
-            const auto length = columnCells[row]->serialize().length();
-            if (max_length < length) max_length = length;
+                const Cell* cell = table->getCell(row, col);
+
+                std::string lineInRow;
+                if (cell != nullptr)
+                {
+                    lineInRow = getLine(cell->asString(), line);
+                }
+
+                std::cout << std::setw(TableLayout::PADDING_X) << "";
+                std::cout << std::left << std::setw(width) << lineInRow;
+                std::cout << std::setw(TableLayout::PADDING_X) << "";
+
+                if (col < cols - 1) std::cout << "|";
+            }
+
+            std::cout << "\n";
         }
-
-        width_array[col] = max_length;
-    }
-
-    for (size_t row = 0; row < table->getRows(); ++row)
-    {
-        for (size_t col = 0; col < table->getCols(); ++col)
-        {
-            const auto cell = table->getCell(row, col);
-
-            size_t current_width = width_array[col] + 2;
-            if (width_array[col] == 0) current_width = 3;
-
-            std::cout << std::right << std::setfill(' ') << std::setw(current_width);
-
-            if (cell) std::cout << cell->serialize();
-            else std::cout << " ";
-
-            if (col < 4) std::cout << "|";
-        }
-
-        std::cout << "\n";
     }
 
     std::cout.flags(original_flags);

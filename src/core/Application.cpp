@@ -6,7 +6,9 @@
 
 Application::Application()
 {
-    this->activeTable = nullptr;
+    this->activeTable = new Table();
+
+    activeTable->subscribe(&layout);
 
     cmdParser.registerCommand("quit", [this](const auto&) {
         return new QuitCommand(*this);
@@ -37,7 +39,6 @@ void Application::run() const
         try
         {
             command->execute();
-            // addCommandToHistory(command);
         }
         catch (const std::exception& err)
         {
@@ -48,18 +49,25 @@ void Application::run() const
     }
 }
 
-// void Application::addCommandToHistory(Command *command)
-// {
-//     cmdHistory.push_back(command);
-//
-//     if (cmdHistory.size() > COMMAND_HISTORY_LENGTH)
-//         cmdHistory.erase(cmdHistory.begin());
-// }
+void Application::setActiveTable(Table *newTable)
+{
+    if (activeTable)
+    {
+        activeTable->unsubscribe(&layout);
+        delete activeTable;
+    }
+
+    activeTable = newTable;
+
+    if (activeTable != nullptr) activeTable->subscribe(&layout);
+
+    layout.updateFromTable(activeTable);
+}
+
 
 Application::~Application()
 {
-    // for (const Command* command : cmdHistory)
-    //     delete command;
+    activeTable->unsubscribe(&layout);
 
     delete activeTable;
 }
