@@ -1,7 +1,7 @@
 #ifndef CELL_H
 #define CELL_H
 
-#include <cstdint>
+#include <chrono>
 #include <string>
 #include <utility>
 
@@ -47,15 +47,16 @@ public:
 
 
 class DateCell final : public Cell {
-    const uint8_t day = 0;
-    const uint8_t month = 0;
-    const uint16_t year = 0;
+    const std::chrono::year_month_day date;
 
 public:
+
+    static constexpr auto REFERENCE_DATE = std::chrono::year(1970) / std::chrono::month(1) / std::chrono::day(1);
+
     DateCell(
-        const uint8_t day,
-        const uint8_t month,
-        const uint16_t year) : day(day), month(month), year(year) {}
+        uint8_t day,
+        uint8_t month,
+        uint16_t year);
 
     [[nodiscard]] DateCell* clone() const override;
     [[nodiscard]] double asValue() const override;

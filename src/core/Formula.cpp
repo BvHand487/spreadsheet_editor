@@ -64,5 +64,8 @@ double FormulaOperator::evaluate() const
 
 double FormulaCellReference::evaluate() const
 {
-    return Application::getInstance().getActiveTable()->getCell(row, column)->asValue();
+    const Cell* cell = Application::getInstance().getActiveTable()->getCell(row, column);
+
+    // If reference points to an empty cell (nullptr) then consider it 0.0
+    return cell ? cell->asValue() : 0.0;
 }

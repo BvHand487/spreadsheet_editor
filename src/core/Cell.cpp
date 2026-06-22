@@ -33,8 +33,20 @@ StringCell* StringCell::clone() const
 
 double StringCell::asValue() const
 {
-    // TODO
-    return 0;
+    if (text.empty())
+        return 0.0;
+
+    try
+    {
+        size_t idx = 0;
+        const double result = std::stod(text, &idx);
+
+        if (idx == text.length())
+            return result;
+    }
+    catch (const std::exception&) {}
+
+    return 0.0;
 };
 
 std::string StringCell::asString() const
@@ -48,6 +60,15 @@ std::string StringCell::serialize() const
 };
 
 
+DateCell::DateCell(
+    const uint8_t day,
+    const uint8_t month,
+    const uint16_t year) : date(std::chrono::year(year) / std::chrono::month(month) / std::chrono::day(day))
+{
+    if (!date.ok())
+        throw std::invalid_argument("Invalid date.");
+}
+
 DateCell* DateCell::clone() const
 {
     return new DateCell(*this);
@@ -55,18 +76,19 @@ DateCell* DateCell::clone() const
 
 double DateCell::asValue() const
 {
-    // TODO
-    return 0;
+    const auto days_diff = std::chrono::sys_days(date) - std::chrono::sys_days(REFERENCE_DATE);
+
+    return static_cast<double>(days_diff.count());
 }
 
 std::string DateCell::asString() const
 {
-    return std::format("{}-{}-{}", day, month, year);
+    return std::format("{}/{}/{}", date.day(), date.month(), date.year());
 }
 
 std::string DateCell::serialize() const
 {
-    return std::format("{}-{}-{}", day, month, year);
+    return std::format("{}/{}/{}", date.day(), date.month(), date.year());
 };
 
 
