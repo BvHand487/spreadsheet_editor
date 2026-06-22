@@ -118,12 +118,19 @@ FormulaCellReference* FormulaParser::consumeCellReference()
 {
     uint32_t row = 0, col = 0;
 
-    if (!consume('R')) throw std::runtime_error("Expected a 'R' while parsing a cell reference.");
-    if (!consumeUInt(row)) throw std::runtime_error("Expected a row number while parsing a cell reference.");
-    if (!consume('C')) throw std::runtime_error("Expected a 'C' while parsing a cell reference.");
-    if (!consumeUInt(col)) throw std::runtime_error("Expected a column number while parsing a cell reference.");
+    if (!consume('R'))
+        throw std::runtime_error("Expected a 'R' while parsing a cell reference.");
 
-    return new FormulaCellReference(row, col);
+    if (!consumeUInt(row) || row == 0)
+        throw std::runtime_error("Expected a valid row number while parsing a cell reference.");
+
+    if (!consume('C'))
+        throw std::runtime_error("Expected a 'C' while parsing a cell reference.");
+
+    if (!consumeUInt(col) || col == 0)
+        throw std::runtime_error("Expected a valid column number while parsing a cell reference.");
+
+    return new FormulaCellReference(row - 1, col - 1);
 }
 
 FormulaNumberLiteral* FormulaParser::consumeNumberLiteral()
@@ -150,6 +157,7 @@ FormulaASTNode* FormulaParser::consumeExpression()
 
             consumeWhitespaces();
             const char nextSymbol = peek();
+
             if (nextSymbol == 'R') operand = consumeCellReference();
             else if (std::isdigit(nextSymbol) || nextSymbol == '+' || nextSymbol == '-') operand = consumeNumberLiteral();
             else
@@ -220,10 +228,10 @@ FormulaASTNode* FormulaParser::consumeExpression()
             nodes.push_back(new FormulaOperator(left, right, type));
         }
     }
-    catch (std::exception &err)
+    catch (const std::exception &err)
     {
         while (!nodes.empty()) { delete nodes.back(); nodes.pop_back(); }
-        throw err;
+        throw;
     }
 
     return nodes.back();

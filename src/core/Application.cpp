@@ -2,6 +2,7 @@
 
 #include "Application.h"
 #include "Command.h"
+#include "Utility.h"
 
 
 Application::Application()
@@ -17,6 +18,32 @@ Application::Application()
     cmdParser.registerCommand("help", [this](const auto&) {
         return new HelpCommand(*this);
     });
+
+    cmdParser.registerCommand("print", [this](const std::vector<std::string>&) {
+        return new PrintCommand(*this);
+    });
+
+    cmdParser.registerCommand("edit <arg> <arg> ...", [this](const std::vector<std::string>& args) {
+        const auto row = static_cast<size_t>(parse_uint(args[0]));
+        const auto col = static_cast<size_t>(parse_uint(args[1]));
+
+        if (row == 0) throw std::runtime_error("Expected a valid row number.");
+        if (col == 0) throw std::runtime_error("Expected a valid column number.");
+
+        return new EditCellCommand(this->getActiveTable(), row - 1, col - 1, args[2]);
+    });
+
+    cmdParser.registerCommand("save as ...", [this](const std::vector<std::string>& args) {
+        return new SaveAsCommand(*this, args[0]);
+    });
+
+    cmdParser.registerCommand("save", [this](const std::vector<std::string>&) {
+        return new SaveCommand(*this);
+    });
+
+    cmdParser.registerCommand("open ...", [this](const std::vector<std::string>& args) {
+       return new OpenCommand(*this, args[0]);
+   });
 
     this->running = true;
 }
@@ -49,6 +76,7 @@ void Application::run() const
     }
 }
 
+// takes ownership of table
 void Application::setActiveTable(Table *newTable)
 {
     if (activeTable)

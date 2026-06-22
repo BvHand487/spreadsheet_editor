@@ -48,7 +48,8 @@ Table::Table(const size_t rows, const size_t cols)
     reserve(rows, cols);
 }
 
-void Table::setCell(const size_t row, const size_t col, const Cell *cell)
+// takes ownership of cell
+void Table::setCell(const size_t row, const size_t col, Cell *cell)
 {
     validate_coords(row, col);
 
@@ -74,7 +75,7 @@ void Table::setCell(const size_t row, const size_t col, const Cell *cell)
     const size_t cell_index = rowsCapacity * col + row;
 
     delete cells[cell_index];
-    cells[cell_index] = cell == nullptr ? nullptr : cell->clone();
+    cells[cell_index] = cell;
 
     // notify onCellChange
     for (const auto& listener : listeners)

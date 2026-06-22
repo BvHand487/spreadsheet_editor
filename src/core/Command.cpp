@@ -33,6 +33,7 @@ void SaveAsCommand::execute()
 
 void OpenCommand::execute() {
     Table *table = TableSerializer::loadFromFile(path);
+    ctx.setActiveSavePath(path);
     ctx.setActiveTable(table);
 }
 
@@ -96,7 +97,6 @@ void PrintCommand::execute()
 
 void EditCellCommand::execute()
 {
-    const Cell *temp = CellFactory::create_cell_auto(value);
+    Cell *temp = CellFactory::create_cell_auto(value);
     this->table->setCell(row, column, temp);
-    delete temp;
 }

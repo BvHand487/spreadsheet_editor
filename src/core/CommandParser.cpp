@@ -119,18 +119,21 @@ Command* CommandParser::parse(const std::string &text) const
     std::vector<std::string> args;
 
     const Node* current = &root;
+    size_t pos = 0;
     for (const auto& token : tokens)
     {
+        pos = text.find(token, pos);
+
         current = current->findChild(token);
         if (current == nullptr) return nullptr;
 
         if (current->isFixedArg())
         {
             args.push_back(token);
+            pos += token.length();
         }
         else if (current->isVariableArg())
         {
-            const size_t pos = text.find(token);
             args.push_back(text.substr(pos));
             break;
         }

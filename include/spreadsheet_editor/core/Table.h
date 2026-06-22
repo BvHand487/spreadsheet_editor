@@ -35,7 +35,7 @@ public:
     [[nodiscard]] size_t getRows() const { return rows; };
     [[nodiscard]] size_t getCols() const { return cols; };
 
-    void setCell(size_t row, size_t col, const Cell *cell);
+    void setCell(size_t row, size_t col, Cell *cell);
     [[nodiscard]] Cell* getCell(size_t row, size_t col) const;
 
     [[nodiscard]] std::vector<Cell*> getRow(size_t row) const;

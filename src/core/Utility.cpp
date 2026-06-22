@@ -10,7 +10,8 @@ void split(const std::string &text, const char delimiter, std::vector<std::strin
     std::string token;
 
     while (std::getline(ss, token, delimiter))
-        tokens.push_back(token);
+        if (!token.empty())
+            tokens.push_back(token);
 }
 
 std::vector<std::string> split(const std::string &text, const char delimiter)
