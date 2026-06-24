@@ -62,27 +62,27 @@ bool FormulaParser::consumeSign(bool &outSign)
     return true;
 }
 
-bool FormulaParser::consumeInt(int32_t &out)
+bool FormulaParser::consumeInt(int &out)
 {
     bool isPositive = true;
     consumeSign(isPositive);
 
-    uint32_t number = 0;
+    unsigned number = 0;
     if (!consumeUInt(number))
         return false;
 
-    out = static_cast<int32_t>(number);
+    out = static_cast<int>(number);
     out = isPositive ? out : -out;
 
     return true;
 }
 
-bool FormulaParser::consumeUInt(uint32_t &out)
+bool FormulaParser::consumeUInt(unsigned &out)
 {
     if (!std::isdigit(peek()))
         return false;
 
-    int32_t number = 0;
+    int number = 0;
     while (std::isdigit(peek()))
     {
         const int digit = peek() - '0';
@@ -103,7 +103,7 @@ bool FormulaParser::consumeDouble(double& out)
     bool isPositive = true;
     consumeSign(isPositive);
 
-    int32_t whole = 0;
+    int whole = 0;
     if (!consumeInt(whole)) return false;
 
     if (!consume('.')) {
@@ -113,7 +113,7 @@ bool FormulaParser::consumeDouble(double& out)
 
     const size_t previous_position = position;
 
-    int32_t decimal = 0;
+    int decimal = 0;
     if (!consumeInt(decimal)) return false;
 
     int factor = 1;
@@ -127,7 +127,7 @@ bool FormulaParser::consumeDouble(double& out)
 
 FormulaCellReference* FormulaParser::consumeCellReference()
 {
-    uint32_t row = 0, col = 0;
+    unsigned row = 0, col = 0;
 
     if (!consumeCaseInsensitive('r'))
         throw std::runtime_error("Expected a 'R' while parsing a cell reference.");

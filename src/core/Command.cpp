@@ -1,8 +1,7 @@
-#include "Command.h"
-
 #include <iostream>
 
 #include "Application.h"
+#include "Command.h"
 #include "CommandParser.h"
 #include "Table.h"
 #include "TableSerializer.h"
@@ -92,6 +91,11 @@ void PrintCommand::execute()
     std::cout.flags(original_flags);
     std::cout.fill(original_fill);
     std::cout << std::flush;
+}
+
+void ClearCommand::execute()
+{
+    this->table->clear();
 }
 
 void EditCellCommand::execute()

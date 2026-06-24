@@ -3,6 +3,7 @@
 
 #include "Table.h"
 
+
 class TableSerializer
 {
 public:

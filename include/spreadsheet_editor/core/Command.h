@@ -1,7 +1,6 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
-#include <utility>
 
 #include "Table.h"
 
@@ -77,6 +76,15 @@ public:
     void execute() override;
 };
 
+class ClearCommand final : public Command
+{
+    Table* table;
+
+public:
+    explicit ClearCommand(Table* table) :
+        table(table) {}
+    void execute() override;
+};
 
 class EditCellCommand final : public Command
 {

@@ -99,6 +99,15 @@ public:
         representation(text),
         formula(FormulaParser::parseFormula(text)) {}
 
+    FormulaCell(const FormulaCell &obj) :
+        representation(obj.representation),
+        formula(obj.formula->clone()),
+        lastVersion(obj.lastVersion),
+        cachedValue(obj.cachedValue),
+        isError_(obj.isError_) {}
+
+    FormulaCell& operator=(const FormulaCell& obj);
+
     bool isError() const { return isError_; }
     bool isEvaluating() const { return isEvaluating_; }
 

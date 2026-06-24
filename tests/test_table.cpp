@@ -31,8 +31,6 @@ TEST_CASE("Table tests.")
         CHECK(tableCell == cell);  // same address
         CHECK_EQ(typeid(*tableCell), typeid(*cell));
         CHECK_EQ(tableCell->asValue(), cell->asValue());
-
-        delete cell;
     }
 
     SUBCASE("Layout gets updated correctly.")
@@ -42,7 +40,8 @@ TEST_CASE("Table tests.")
 
         table.subscribe(&layout);
 
-        table.setCell(0, 0, nullptr);
+        auto cell = CellFactory::create_cell_auto("1");
+        table.setCell(0, 0, cell);
 
         CHECK(layout.getRowHeights().size() == 1);
         CHECK(layout.getColWidths().size() == 1);

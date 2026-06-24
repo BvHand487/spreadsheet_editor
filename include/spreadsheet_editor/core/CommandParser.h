@@ -60,7 +60,7 @@ public:
     CommandParser(const CommandParser &) = delete;
     CommandParser& operator= (const CommandParser &) = delete;
 
-    [[nodiscard]] std::vector<std::string> getRegisteredCommands() const; // TODO: maybe cache
+    [[nodiscard]] std::vector<std::string> getRegisteredCommands() const;
 
     void registerCommand(const std::string& text, const CommandAction& action);
     [[nodiscard]] Command* parse(const std::string& text) const;

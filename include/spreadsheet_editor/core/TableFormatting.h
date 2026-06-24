@@ -11,7 +11,8 @@ class Table;
 class TableObserver
 {
 public:
-    virtual void onCellChange(size_t row, size_t col, const Cell *cell) = 0;
+    virtual void onCellChanged(size_t row, size_t col, const Cell *cell) = 0;
+    virtual void onTableCleared() = 0;
 
     virtual ~TableObserver() = default;
 };
@@ -40,7 +41,8 @@ public:
     void updateFromCell(size_t row, size_t col, const Cell* cell);
     void updateFromTable(const Table* table);
 
-    void onCellChange(size_t row, size_t col, const Cell *cell) override;
+    void onCellChanged(size_t row, size_t col, const Cell *cell) override;
+    void onTableCleared() override;
 };
 
 #endif //TABLEFORMATTING_H

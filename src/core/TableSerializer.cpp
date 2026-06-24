@@ -1,10 +1,7 @@
 #include <fstream>
-
-#include "TableSerializer.h"
-
 #include <iostream>
 
-#include "Utility.h"
+#include "TableSerializer.h"
 
 
 Table* TableSerializer::loadFromFile(const std::string &filename, const char delimiter)

@@ -32,6 +32,30 @@ int FormulaOperator::getPrecedence(const Type type)
     }
 }
 
+FormulaOperator::FormulaOperator(const FormulaOperator &obj) :
+    left(obj.left ? obj.left->clone() : nullptr),
+    right(obj.right ? obj.right->clone() : nullptr),
+    type(obj.type)
+{
+}
+
+FormulaOperator& FormulaOperator::operator=(const FormulaOperator &obj)
+{
+    if (this != &obj)
+    {
+        FormulaASTNode *newLeft = obj.left ? obj.left->clone() : nullptr;
+        FormulaASTNode *newRight = obj.right ? obj.right->clone() : nullptr;
+
+        delete left;
+        delete right;
+        type = obj.type;
+        left = newLeft;
+        right = newRight;
+    }
+
+    return *this;
+}
+
 double FormulaOperator::evaluate() const
 {
     if (left == nullptr || right == nullptr)
@@ -79,6 +103,11 @@ double FormulaOperator::evaluate() const
     }
 }
 
+FormulaOperator* FormulaOperator::clone() const
+{
+    return new FormulaOperator(*this);
+}
+
 double FormulaCellReference::evaluate() const
 {
     const Cell* cell = Application::getInstance().getActiveTable()->getCell(row, column);
@@ -88,4 +117,14 @@ double FormulaCellReference::evaluate() const
         result = cell->asValue();
 
     return result;
+}
+
+FormulaCellReference* FormulaCellReference::clone() const
+{
+    return new FormulaCellReference(*this);
+}
+
+FormulaNumberLiteral* FormulaNumberLiteral::clone() const
+{
+    return new FormulaNumberLiteral(*this);
 }

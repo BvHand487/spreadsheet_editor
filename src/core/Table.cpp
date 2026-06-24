@@ -60,6 +60,26 @@ Table::Table(const size_t rows, const size_t cols)
     reserve(rows, cols);
 }
 
+void Table::clear()
+{
+    for (size_t col = 0; col < colsCapacity; col++)
+    {
+        for (size_t row = 0; row < rowsCapacity; row++)
+        {
+            const size_t idx = rowsCapacity * col + row;
+
+            delete cells[idx];
+            cells[idx] = nullptr;
+        }
+    }
+
+    rows = cols = 0;
+
+    notifyOnTableCleared();
+
+    incrementVersion();
+}
+
 // takes ownership of cell
 void Table::setCell(const size_t row, const size_t col, Cell *cell)
 {
@@ -96,10 +116,15 @@ void Table::setCell(const size_t row, const size_t col, Cell *cell)
         delete cell;
         throw;
     }
+    catch (const cell_evaluation_error &)
+    {
+        delete oldCell;
+        notifyOnCellChanged(row, col, cell);
+        throw;
+    }
 
     delete oldCell;
-
-    notifyOnCellChange(row, col, cell);
+    notifyOnCellChanged(row, col, cell);
 }
 
 Cell* Table::getCell(const size_t row, const size_t col) const
@@ -154,16 +179,21 @@ void Table::unsubscribe(const TableObserver *listener)
     }
 }
 
-void Table::notifyOnCellChange(const size_t row, const size_t col, const Cell *cell) const
+void Table::notifyOnCellChanged(const size_t row, const size_t col, const Cell *cell) const
 {
     for (const auto& listener : listeners)
         if (listener)
-            listener->onCellChange(row, col, cell);
+            listener->onCellChanged(row, col, cell);
+}
+
+void Table::notifyOnTableCleared() const
+{
+    for (const auto& listener : listeners)
+        if (listener)
+            listener->onTableCleared();
 }
 
 Table::~Table()
 {
-    for (size_t col = 0; col < cols; col++)
-        for (size_t row = 0; row < rows; row++)
-            delete cells[rowsCapacity * cols + col];
+    this->clear();
 }

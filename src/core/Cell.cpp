@@ -112,6 +112,23 @@ std::string DateCell::serialize() const
 };
 
 
+FormulaCell& FormulaCell::operator=(const FormulaCell &obj)
+{
+    if (this != &obj)
+    {
+        const FormulaASTNode *newFormula = obj.formula->clone();
+
+        delete formula;
+        formula = newFormula;
+        representation = obj.representation;
+        lastVersion = obj.lastVersion;
+        cachedValue = obj.cachedValue;
+        isError_ = obj.isError_;
+    }
+
+    return *this;
+}
+
 FormulaCell* FormulaCell::clone() const
 {
     return new FormulaCell(*this);

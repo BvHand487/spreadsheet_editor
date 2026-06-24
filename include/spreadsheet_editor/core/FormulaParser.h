@@ -1,9 +1,7 @@
 #ifndef FORMULAPARSER_H
 #define FORMULAPARSER_H
 
-#include <cstdint>
 #include <string>
-#include <utility>
 
 #include "Formula.h"
 
@@ -22,8 +20,8 @@ class FormulaParser
 
     // if outSign == true -> positive, else negative
     bool consumeSign(bool& outSign);
-    bool consumeInt(int32_t& out);
-    bool consumeUInt(uint32_t& out);
+    bool consumeInt(int &out);
+    bool consumeUInt(unsigned &out);
     bool consumeDouble(double& out);
 
     FormulaCellReference* consumeCellReference();

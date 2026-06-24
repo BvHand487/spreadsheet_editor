@@ -1,5 +1,6 @@
-#include "TableFormatting.h"
 #include "Table.h"
+#include "TableFormatting.h"
+
 
 void TableLayout::getLayoutWidthAndHeight(const Cell &cell, size_t &width, size_t &height)
 {
@@ -69,7 +70,12 @@ void TableLayout::updateFromTable(const Table *table)
     }
 }
 
-void TableLayout::onCellChange(const size_t row, const size_t col, const Cell *cell)
+void TableLayout::onCellChanged(const size_t row, const size_t col, const Cell *cell)
 {
     updateFromCell(row, col, cell);
+}
+
+void TableLayout::onTableCleared()
+{
+    this->clear();
 }

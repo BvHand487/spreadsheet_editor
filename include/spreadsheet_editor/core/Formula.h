@@ -1,14 +1,14 @@
 #ifndef FORMULA_H
 #define FORMULA_H
 
-#include <stdexcept>
-
 
 class Application;
 
 class FormulaASTNode {
 public:
     [[nodiscard]] virtual double evaluate() const = 0;
+    [[nodiscard]] virtual FormulaASTNode* clone() const = 0;
+
     virtual ~FormulaASTNode() = default;
 };
 
@@ -17,21 +17,7 @@ class FormulaOperand : public FormulaASTNode {};
 class FormulaOperator final : public FormulaASTNode
 {
 public:
-    enum class Type
-    {
-        None,
-        ADD,
-        SUB,
-        MUL,
-        DIV,
-        EQ,
-        NEQ,
-        LT,
-        GT,
-        LTE,
-        GTE
-    };
-
+    enum class Type { None, ADD, SUB, MUL, DIV, EQ, NEQ, LT, GT, LTE, GTE };
     static int getPrecedence(Type type);
 
 private:
@@ -40,12 +26,15 @@ private:
 
 public:
     FormulaOperator(FormulaASTNode *left, FormulaASTNode *right, const Type type) : left(left), right(right), type(type) {}
+    FormulaOperator(const FormulaOperator& obj);
+    FormulaOperator& operator=(const FormulaOperator& obj);
 
     [[nodiscard]] Type getType() const { return type; }
     [[nodiscard]] FormulaASTNode *getLeft() const { return left; }
     [[nodiscard]] FormulaASTNode *getRight() const { return right; }
 
     [[nodiscard]] double evaluate() const override;
+    [[nodiscard]] FormulaOperator* clone() const override;
 
     ~FormulaOperator() override
     {
@@ -61,6 +50,7 @@ class FormulaCellReference final : public FormulaOperand
 
 public:
     [[nodiscard]] double evaluate() const override;
+    [[nodiscard]] FormulaCellReference* clone() const override;
 
     FormulaCellReference(const size_t row, const size_t col) : row(row), column(col) {}
 };
@@ -71,6 +61,7 @@ class FormulaNumberLiteral final : public FormulaOperand
 
 public:
     [[nodiscard]] double evaluate() const override { return value; }
+    [[nodiscard]] FormulaNumberLiteral* clone() const override;
 
     explicit FormulaNumberLiteral(const double value) : value(value) {}
 };

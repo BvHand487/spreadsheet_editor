@@ -1,8 +1,6 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#include <cmath>
-#include <string>
 #include <vector>
 
 #include "Cell.h"
@@ -40,6 +38,7 @@ public:
     [[nodiscard]] size_t getCols() const { return cols; };
     [[nodiscard]] size_t getColsCapacity() const { return colsCapacity; };
 
+    void clear();
     void setCell(size_t row, size_t col, Cell *cell);
     [[nodiscard]] Cell* getCell(size_t row, size_t col) const;
 
@@ -53,7 +52,8 @@ public:
     void subscribe(TableObserver *listener);
     void unsubscribe(const TableObserver *listener);
 
-    void notifyOnCellChange(size_t row, size_t col, const Cell *cell) const;
+    void notifyOnCellChanged(size_t row, size_t col, const Cell *cell) const;
+    void notifyOnTableCleared() const;
 
     ~Table();
 };

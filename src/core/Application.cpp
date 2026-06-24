@@ -11,6 +11,18 @@ Application::Application()
 
     activeTable->subscribe(&layout);
 
+    cmdParser.registerCommand("save as ...", [this](const std::vector<std::string>& args) {
+        return new SaveAsCommand(*this, args[0]);
+    });
+
+    cmdParser.registerCommand("save", [this](const std::vector<std::string>&) {
+        return new SaveCommand(*this);
+    });
+
+    cmdParser.registerCommand("open ...", [this](const std::vector<std::string>& args) {
+       return new OpenCommand(*this, args[0]);
+   });
+
     cmdParser.registerCommand("quit", [this](const auto&) {
         return new QuitCommand(*this);
     });
@@ -23,6 +35,10 @@ Application::Application()
         return new PrintCommand(*this);
     });
 
+    cmdParser.registerCommand("clear", [this](const std::vector<std::string>&) {
+        return new ClearCommand(this->getActiveTable());
+    });
+
     cmdParser.registerCommand("edit <arg> <arg> ...", [this](const std::vector<std::string>& args) {
         const auto row = static_cast<size_t>(parse_uint(args[0]));
         const auto col = static_cast<size_t>(parse_uint(args[1]));
@@ -32,18 +48,6 @@ Application::Application()
 
         return new EditCellCommand(this->getActiveTable(), row - 1, col - 1, args[2]);
     });
-
-    cmdParser.registerCommand("save as ...", [this](const std::vector<std::string>& args) {
-        return new SaveAsCommand(*this, args[0]);
-    });
-
-    cmdParser.registerCommand("save", [this](const std::vector<std::string>&) {
-        return new SaveCommand(*this);
-    });
-
-    cmdParser.registerCommand("open ...", [this](const std::vector<std::string>& args) {
-       return new OpenCommand(*this, args[0]);
-   });
 
     this->running = true;
 }

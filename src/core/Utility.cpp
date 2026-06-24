@@ -1,6 +1,6 @@
-#include "Utility.h"
+#include <stdexcept>
 
-#include <sstream>
+#include "Utility.h"
 
 
 bool approx_equals(const double a, const double b, const double epsilon)
@@ -10,12 +10,24 @@ bool approx_equals(const double a, const double b, const double epsilon)
 
 void split(const std::string &text, const char delimiter, std::vector<std::string> &tokens)
 {
-    std::stringstream ss(text);
+    size_t start = 0;
+    size_t end = text.find(delimiter);
+
     std::string token;
 
-    while (std::getline(ss, token, delimiter))
-        if (!token.empty())
-            tokens.push_back(token);
+    while (end != std::string::npos)
+    {
+        token = text.substr(start, end - start);
+
+        if (!token.empty()) tokens.push_back(token);
+
+        start = end + 1;
+        end = text.find(delimiter, start);
+    }
+
+    token = text.substr(start);
+    if (!token.empty())
+        tokens.push_back(token);
 }
 
 std::vector<std::string> split(const std::string &text, const char delimiter)
