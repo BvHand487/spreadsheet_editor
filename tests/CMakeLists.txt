@@ -1,5 +1,8 @@
 add_executable(unit_tests
-    test_table.cpp
+        test_main.cpp
+        test_application.cpp
+        test_cell.cpp
+        test_table.cpp
 )
 
 target_link_libraries(unit_tests PRIVATE spreadsheet_editor_core)

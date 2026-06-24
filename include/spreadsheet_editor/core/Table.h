@@ -33,7 +33,9 @@ public:
     Table& operator= (const Table &table) = delete;
 
     [[nodiscard]] size_t getRows() const { return rows; };
+    [[nodiscard]] size_t getRowsCapacity() const { return rowsCapacity; };
     [[nodiscard]] size_t getCols() const { return cols; };
+    [[nodiscard]] size_t getColsCapacity() const { return colsCapacity; };
 
     void setCell(size_t row, size_t col, Cell *cell);
     [[nodiscard]] Cell* getCell(size_t row, size_t col) const;

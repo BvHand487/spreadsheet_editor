@@ -26,7 +26,7 @@ public:
     Application& operator=(const Application&) = delete;
     Application& operator=(Application&&) noexcept = delete;
 
-    // applies a command
+    // applies a command based on text
     void apply(const std::string& text) const;
     void run() const;
 

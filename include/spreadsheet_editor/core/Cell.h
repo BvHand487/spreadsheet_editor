@@ -25,6 +25,8 @@ class IntegerCell final : public Cell {
 public:
     explicit IntegerCell(const int32_t value) : value(value) {}
 
+    [[nodiscard]] int32_t getValue() const { return value; }
+
     [[nodiscard]] IntegerCell* clone() const override;
     [[nodiscard]] double asValue() const override;
     [[nodiscard]] std::string asString() const override;
@@ -37,6 +39,8 @@ class DecimalCell final : public Cell {
 
 public:
     explicit DecimalCell(const double value) : value(value) {}
+
+    [[nodiscard]] double getValue() const { return value; }
 
     [[nodiscard]] DecimalCell* clone() const override;
     [[nodiscard]] double asValue() const override;
@@ -69,6 +73,10 @@ public:
         uint8_t day,
         uint8_t month,
         uint16_t year);
+
+    [[nodiscard]] uint8_t getDay() const { return static_cast<unsigned>(date.day()); };
+    [[nodiscard]] uint8_t getMonth() const { return static_cast<unsigned>(date.month()); };
+    [[nodiscard]] uint16_t getYear() const { return static_cast<signed>(date.year()); };
 
     [[nodiscard]] DateCell* clone() const override;
     [[nodiscard]] double asValue() const override;
