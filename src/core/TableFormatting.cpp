@@ -37,42 +37,64 @@ void TableLayout::clear()
     colWidths.clear();
 }
 
-void TableLayout::updateFromCell(const size_t row, const size_t col, const Cell *cell)
+void TableLayout::updateFromCell(const Table *table, const size_t row, const size_t col)
 {
-    size_t width = 1, height = 1;
-
-    if (cell != nullptr)
-        getLayoutWidthAndHeight(*cell, width, height);
-
     if (row >= rowHeights.size()) rowHeights.resize(row + 1, 1);
     if (col >= colWidths.size()) colWidths.resize(col + 1, 1);
 
-    rowHeights[row] = std::max(rowHeights[row], height);
-    colWidths[col] = std::max(colWidths[col], width);
+    colWidths[col] = 1;
+    rowHeights[row] = 1;
+
+    size_t width = 1, height = 1;
+
+    for (size_t r = 0; r < table->getRows(); ++r)
+    {
+        if (const Cell* cell = table->getCell(r, col))
+        {
+            getLayoutWidthAndHeight(*cell, width, height);
+            colWidths[col] = std::max(colWidths[col], width);
+        }
+    }
+
+    for (size_t c = 0; c < table->getCols(); ++c)
+    {
+        if (const Cell* cell = table->getCell(row, c))
+        {
+            getLayoutWidthAndHeight(*cell, width, height);
+            rowHeights[row] = std::max(rowHeights[row], height);
+        }
+    }
 }
 
 
 void TableLayout::updateFromTable(const Table *table)
 {
+    if (table == nullptr) return;
+
     this->clear();
 
-    if (table == nullptr)
-        return;
+    rowHeights.resize(table->getRows(), 1);
+    colWidths.resize(table->getCols(), 1);
 
     for (size_t r = 0; r < table->getRows(); ++r)
     {
         for (size_t c = 0; c < table->getCols(); ++c)
         {
-            const Cell* cell = table->getCell(r, c);
-            if (cell != nullptr)
-                updateFromCell(r, c, cell);
+            if (const Cell* cell = table->getCell(r, c))
+            {
+                size_t width = 1, height = 1;
+                getLayoutWidthAndHeight(*cell, width, height);
+
+                colWidths[c] = std::max(colWidths[c], width);
+                rowHeights[r] = std::max(rowHeights[r], height);
+            }
         }
     }
 }
 
-void TableLayout::onCellChanged(const size_t row, const size_t col, const Cell *cell)
+void TableLayout::onCellChanged(const Table *table, const size_t row, const size_t col)
 {
-    updateFromCell(row, col, cell);
+    updateFromCell(table, row, col);
 }
 
 void TableLayout::onTableCleared()

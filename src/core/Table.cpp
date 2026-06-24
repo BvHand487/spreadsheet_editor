@@ -83,9 +83,6 @@ void Table::clear()
 // takes ownership of cell
 void Table::setCell(const size_t row, const size_t col, Cell *cell)
 {
-    if (cell == nullptr)
-        return;
-
     validate_coords(row, col);
     ensureCapacity(row, col);
 
@@ -94,6 +91,17 @@ void Table::setCell(const size_t row, const size_t col, Cell *cell)
     const size_t oldRows = this->rows;
     const size_t oldCols = this->cols;
     Cell* oldCell = cells[idx];
+
+    if (cell == nullptr)
+    {
+        cells[idx] = nullptr;
+
+        incrementVersion();
+
+        delete oldCell;
+        notifyOnCellChanged(row, col);
+        return;
+    }
 
     try {
         this->rows = std::max(this->rows, row + 1);
@@ -119,12 +127,12 @@ void Table::setCell(const size_t row, const size_t col, Cell *cell)
     catch (const cell_evaluation_error &)
     {
         delete oldCell;
-        notifyOnCellChanged(row, col, cell);
+        notifyOnCellChanged(row, col);
         throw;
     }
 
     delete oldCell;
-    notifyOnCellChanged(row, col, cell);
+    notifyOnCellChanged(row, col);
 }
 
 Cell* Table::getCell(const size_t row, const size_t col) const
@@ -179,11 +187,11 @@ void Table::unsubscribe(const TableObserver *listener)
     }
 }
 
-void Table::notifyOnCellChanged(const size_t row, const size_t col, const Cell *cell) const
+void Table::notifyOnCellChanged(const size_t row, const size_t col) const
 {
     for (const auto& listener : listeners)
         if (listener)
-            listener->onCellChanged(row, col, cell);
+            listener->onCellChanged(this, row, col);
 }
 
 void Table::notifyOnTableCleared() const

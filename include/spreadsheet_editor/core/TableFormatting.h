@@ -11,7 +11,7 @@ class Table;
 class TableObserver
 {
 public:
-    virtual void onCellChanged(size_t row, size_t col, const Cell *cell) = 0;
+    virtual void onCellChanged(const Table *table, size_t row, size_t col) = 0;
     virtual void onTableCleared() = 0;
 
     virtual ~TableObserver() = default;
@@ -38,10 +38,10 @@ public:
     [[nodiscard]] size_t getColWidth(const size_t col) const { return colWidths[col]; }
 
     void clear();
-    void updateFromCell(size_t row, size_t col, const Cell* cell);
+    void updateFromCell(const Table *table, size_t row, size_t col);
     void updateFromTable(const Table* table);
 
-    void onCellChanged(size_t row, size_t col, const Cell *cell) override;
+    void onCellChanged(const Table *table, size_t row, size_t col) override;
     void onTableCleared() override;
 };
 

@@ -52,7 +52,7 @@ public:
     void subscribe(TableObserver *listener);
     void unsubscribe(const TableObserver *listener);
 
-    void notifyOnCellChanged(size_t row, size_t col, const Cell *cell) const;
+    void notifyOnCellChanged(size_t row, size_t col) const;
     void notifyOnTableCleared() const;
 
     ~Table();
