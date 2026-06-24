@@ -1,7 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <functional>
 #include <vector>
 
 #include "Command.h"
@@ -10,7 +9,20 @@
 class CommandParser
 {
 public:
-    using CommandAction = std::function<Command*(const std::vector<std::string>&)>;
+    // work-around for no std::function
+    using CommandCallback = Command* (*)(const std::vector<std::string>& args, Application *ctx);
+    struct CommandAction
+    {
+        CommandCallback cb = nullptr;
+        Application* ctx = nullptr;
+
+        operator bool() const { return cb != nullptr; }
+
+        Command* operator()(const std::vector<std::string>& args) const {
+            return cb(args, ctx);
+        }
+    };
+
 
     constexpr static auto ROOT_KEYWORD = "root";
     constexpr static auto FIXED_ARG_KEYWORD = "<arg>";
@@ -19,7 +31,7 @@ public:
     class Node
     {
         std::string lexeme;
-        CommandAction action = nullptr;
+        CommandAction action{};
         std::vector<Node*> children;
 
     public:
@@ -41,7 +53,7 @@ public:
         [[nodiscard]] bool isFixedArg() const { return lexeme == FIXED_ARG_KEYWORD; }
         [[nodiscard]] bool isVariableArg() const { return lexeme == VARIABLE_ARGS_KEYWORD; }
 
-        [[nodiscard]] bool isTerminal() const { return action != nullptr; } // checks if it's a valid ending for a command
+        [[nodiscard]] bool isTerminal() const { return action; } // checks if it's a valid ending for a command
         [[nodiscard]] bool isLeaf() const { return children.empty(); }
         [[nodiscard]] size_t childrenCount() const { return children.size(); }
 
@@ -62,7 +74,7 @@ public:
 
     [[nodiscard]] std::vector<std::string> getRegisteredCommands() const;
 
-    void registerCommand(const std::string& text, const CommandAction& action);
+    void registerCommand(const std::string& text, const CommandCallback& action, Application *ctx);
     [[nodiscard]] Command* parse(const std::string& text) const;
 
 private:

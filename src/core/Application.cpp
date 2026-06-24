@@ -11,43 +11,67 @@ Application::Application()
 
     activeTable->subscribe(&layout);
 
-    cmdParser.registerCommand("save as ...", [this](const std::vector<std::string>& args) {
-        return new SaveAsCommand(*this, args[0]);
-    });
+    cmdParser.registerCommand("save as ...",
+        [](const std::vector<std::string>& args, Application *app) -> Command* {
+            return new SaveAsCommand(*app, args[0]);
+        },
+        this
+    );
 
-    cmdParser.registerCommand("save", [this](const std::vector<std::string>&) {
-        return new SaveCommand(*this);
-    });
+    cmdParser.registerCommand("save",
+        [](auto&, Application *app) -> Command* {
+            return new SaveCommand(*app);
+        },
+        this
+    );
 
-    cmdParser.registerCommand("open ...", [this](const std::vector<std::string>& args) {
-       return new OpenCommand(*this, args[0]);
-   });
+    cmdParser.registerCommand("open ...",
+    [](const std::vector<std::string>& args, Application *app) -> Command* {
+            return new OpenCommand(*app, args[0]);
+        },
+        this
+    );
 
-    cmdParser.registerCommand("quit", [this](const auto&) {
-        return new QuitCommand(*this);
-    });
+    cmdParser.registerCommand("quit",
+        [](auto&, Application *app) -> Command* {
+            return new QuitCommand(*app);
+        },
+        this
+    );
 
-    cmdParser.registerCommand("help", [this](const auto&) {
-        return new HelpCommand(*this);
-    });
+    cmdParser.registerCommand("help",
+        [](auto&, Application *app) -> Command* {
+            return new HelpCommand(*app);
+        },
+        this
+    );
 
-    cmdParser.registerCommand("print", [this](const std::vector<std::string>&) {
-        return new PrintCommand(*this);
-    });
+    cmdParser.registerCommand("print",
+        [](auto&, Application *app) -> Command* {
+            return new PrintCommand(*app);
+        },
+        this
+    );
 
-    cmdParser.registerCommand("clear", [this](const std::vector<std::string>&) {
-        return new ClearCommand(this->getActiveTable());
-    });
+    cmdParser.registerCommand("clear",
+        [](auto&, Application *app) -> Command* {
+            return new ClearCommand(app->getActiveTable());
+        },
+        this
+    );
 
-    cmdParser.registerCommand("edit <arg> <arg> ...", [this](const std::vector<std::string>& args) {
-        const auto row = static_cast<size_t>(parse_uint(args[0]));
-        const auto col = static_cast<size_t>(parse_uint(args[1]));
+    cmdParser.registerCommand("edit <arg> <arg> ...",
+        [](const std::vector<std::string>& args, Application *app) -> Command* {
+            const auto row = static_cast<size_t>(parse_uint(args[0]));
+            const auto col = static_cast<size_t>(parse_uint(args[1]));
 
-        if (row == 0) throw std::runtime_error("Expected a valid row number.");
-        if (col == 0) throw std::runtime_error("Expected a valid column number.");
+            if (row == 0) throw std::runtime_error("Expected a valid row number.");
+            if (col == 0) throw std::runtime_error("Expected a valid column number.");
 
-        return new EditCellCommand(this->getActiveTable(), row - 1, col - 1, args[2]);
-    });
+            return new EditCellCommand(app->getActiveTable(), row - 1, col - 1, args[2]);
+        },
+        this
+    );
 
     this->running = true;
 }

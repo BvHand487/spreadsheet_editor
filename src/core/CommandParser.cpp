@@ -95,7 +95,7 @@ void CommandParser::getRegisteredCommandsHelper(const Node *current, std::vector
     }
 }
 
-void CommandParser::registerCommand(const std::string &text, const CommandAction& action)
+void CommandParser::registerCommand(const std::string &text, const CommandCallback& action, Application *ctx)
 {
     const std::vector<std::string> tokens = split(text, ' ');
     Node* current = &root;
@@ -118,7 +118,7 @@ void CommandParser::registerCommand(const std::string &text, const CommandAction
         current = child;
     }
 
-    current->setAction(action);
+    current->setAction({ action, ctx });
 }
 
 Command* CommandParser::parse(const std::string &text) const
