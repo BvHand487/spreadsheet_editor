@@ -102,6 +102,14 @@ void CommandParser::registerCommand(const std::string &text, const CommandAction
 
     for (const auto& token : tokens)
     {
+        if (current->isVariableArg())
+            throw std::runtime_error(
+                std::format(
+                    "Variable argument only allowed at the end of a command. (Command was \"{}\")",
+                    text
+                    )
+                );
+
         auto child = current->findChild(token);
 
         if (child == nullptr)

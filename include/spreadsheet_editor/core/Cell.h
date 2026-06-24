@@ -89,34 +89,25 @@ class FormulaCell final : public Cell {
     std::string representation{};
     const FormulaASTNode* formula = nullptr;
 
+    mutable size_t lastVersion = -1;
     mutable double cachedValue = 0;
-    mutable bool isDirty_ = true;
     mutable bool isError_ = false;
-
-    void refresh() const
-    {
-        isDirty_ = false;
-        isError_ = false;
-
-        try {
-            cachedValue = formula->evaluate();
-        }
-        catch (const formula_evaluation_error&) {
-            isError_ = true;
-        }
-    }
+    mutable bool isEvaluating_ = false;
 
 public:
     explicit FormulaCell(const std::string& text) :
         representation(text),
         formula(FormulaParser::parseFormula(text)) {}
-    bool isDirty() const { return isDirty_; }
+
     bool isError() const { return isError_; }
+    bool isEvaluating() const { return isEvaluating_; }
 
     [[nodiscard]] FormulaCell* clone() const override;
     [[nodiscard]] double asValue() const override;
     [[nodiscard]] std::string asString() const override;
     [[nodiscard]] std::string serialize() const override;
+
+    ~FormulaCell() override { delete formula; }
 };
 
 

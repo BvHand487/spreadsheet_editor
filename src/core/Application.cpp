@@ -75,7 +75,8 @@ void Application::run() const
         std::cout << "> " << std::flush;
         std::getline(std::cin, commandText);
 
-        this->apply(commandText);
+        if (!commandText.empty())
+            this->apply(commandText);
     }
 }
 

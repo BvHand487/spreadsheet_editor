@@ -36,7 +36,7 @@ Table* TableSerializer::loadFromFile(const std::string &filename, const char del
                 try {
                     cell = CellFactory::create_cell_auto(token);
                 }
-                catch (const std::exception &err) {
+                catch (const std::runtime_error &err) {
                     delete table;
                     throw std::format_error(std::format("Error at R{}C{}: {}", row + 1, col + 1, err.what()));
                 }
@@ -56,7 +56,7 @@ Table* TableSerializer::loadFromFile(const std::string &filename, const char del
             try {
                 cell = CellFactory::create_cell_auto(token);
             }
-            catch (const std::exception &err) {
+            catch (const std::runtime_error &err) {
                 delete table;
                 throw std::format_error(std::format("Error at R{}C{}: {}", row + 1, col + 1, err.what()));
             }

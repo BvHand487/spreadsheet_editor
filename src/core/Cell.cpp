@@ -1,4 +1,7 @@
+#include "Application.h"
 #include "Cell.h"
+#include "Exceptions.h"
+#include "FormulaParser.h"
 #include "Utility.h"
 
 
@@ -116,19 +119,45 @@ FormulaCell* FormulaCell::clone() const
 
 double FormulaCell::asValue() const
 {
-    if (isDirty())
-        refresh();
+    if (isEvaluating())
+        throw formula_cyclic_dependency_error("Cannot evaluate formula due to a cyclic dependency.");
+
+    const Table* table = Application::getInstance().getActiveTable();
+
+    if (table->getVersion() == lastVersion && isError_ == false)
+        return cachedValue;
+
+    isEvaluating_ = true;
+    isError_ = false;
+
+    try {
+        cachedValue = formula->evaluate();
+    }
+    catch (const cell_evaluation_critical_error&) {
+        isEvaluating_ = false;
+        throw;
+    }
+    catch (const cell_evaluation_error&) {
+        isEvaluating_ = false;
+        cachedValue = 0.0;
+        isError_ = true;
+        throw;
+    }
+
+    isEvaluating_ = false;
+    lastVersion = table->getVersion();
 
     return cachedValue;
 }
 
 std::string FormulaCell::asString() const
 {
-    if (isDirty())
-        refresh();
-
-    if (isError())
+    try {
+        (void) asValue();
+    }
+    catch (const cell_evaluation_error&) {
         return "ERROR";
+    }
 
     return std::format("{:.2f}", cachedValue);
 }
@@ -147,7 +176,8 @@ Cell* CellFactory::create_cell_auto(const std::string &text)
         return nullptr;
 
     // try formula
-    if (trimmed.front() == '=') return create_cell<FormulaCell>(trimmed);
+    if (trimmed.front() == '=')
+        return create_cell<FormulaCell>(trimmed);
 
     // try string
     if (trimmed.front() == '\"' && trimmed.back() == '\"')

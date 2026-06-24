@@ -1,9 +1,10 @@
 #include <stdexcept>
 
 #include "Application.h"
+#include "Exceptions.h"
 #include "Formula.h"
-
 #include "Utility.h"
+
 
 
 int FormulaOperator::getPrecedence(const Type type)
@@ -52,7 +53,7 @@ double FormulaOperator::evaluate() const
 
         case Type::DIV:
             if (approx_equals(rhs, 0.0))
-                throw formula_evaluation_error("Division by zero while evaluating formula.");
+                throw formula_division_by_zero_error("Division by zero while evaluating formula.");
             return lhs / rhs;
 
         case Type::EQ:
@@ -82,6 +83,9 @@ double FormulaCellReference::evaluate() const
 {
     const Cell* cell = Application::getInstance().getActiveTable()->getCell(row, column);
 
-    // If reference points to an empty cell (nullptr) then consider it 0.0
-    return cell ? cell->asValue() : 0.0;
+    double result = 0.0;
+    if (cell != nullptr)
+        result = cell->asValue();
+
+    return result;
 }

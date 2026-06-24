@@ -1,6 +1,7 @@
-#include "Table.h"
-
 #include <stdexcept>
+
+#include "Exceptions.h"
+#include "Table.h"
 
 
 constexpr void Table::validate_coords(const size_t row, const size_t col)
@@ -36,6 +37,17 @@ void Table::reserve(const size_t newRowCapacity, const size_t newColCapacity)
     colsCapacity = actualCols;
 }
 
+void Table::ensureCapacity(const size_t row, const size_t col)
+{
+    if (row < rowsCapacity && col < colsCapacity) return;
+
+    const size_t targetRows = std::min(std::max(rowsCapacity * 2, row + 1), MAX_ROWS);
+    const size_t targetCols = std::min(std::max(colsCapacity * 2, col + 1), MAX_COLS);
+
+    reserve(targetRows, targetCols);
+}
+
+
 Table::Table()
 {
     // reserve space for a 5x5 table by default
@@ -51,36 +63,43 @@ Table::Table(const size_t rows, const size_t cols)
 // takes ownership of cell
 void Table::setCell(const size_t row, const size_t col, Cell *cell)
 {
+    if (cell == nullptr)
+        return;
+
     validate_coords(row, col);
+    ensureCapacity(row, col);
 
-    // if we need to grow
-    if (row >= rowsCapacity || col >= colsCapacity)
+    const size_t idx = rowsCapacity * col + row;
+
+    const size_t oldRows = this->rows;
+    const size_t oldCols = this->cols;
+    Cell* oldCell = cells[idx];
+
+    try {
+        this->rows = std::max(this->rows, row + 1);
+        this->cols = std::max(this->cols, col + 1);
+        cells[idx] = cell;
+
+        incrementVersion();
+
+        (void) cell->asValue();
+    }
+    catch (const cell_evaluation_critical_error &)
     {
-        const size_t targetRows = std::min(
-            std::max(rowsCapacity * 2, row + 1),
-            MAX_ROWS
-        );
+        // roll back
+        this->rows = oldRows;
+        this->cols = oldCols;
+        cells[idx] = oldCell;
 
-        const size_t targetCols = std::min(
-            std::max(colsCapacity * 2, col + 1),
-            MAX_COLS
-        );
+        decrementVersion();
 
-        reserve(targetRows, targetCols);
+        delete cell;
+        throw;
     }
 
-    this->rows = std::max(this->rows, row + 1);
-    this->cols = std::max(this->cols, col + 1);
+    delete oldCell;
 
-    const size_t cell_index = rowsCapacity * col + row;
-
-    delete cells[cell_index];
-    cells[cell_index] = cell;
-
-    // notify onCellChange
-    for (const auto& listener : listeners)
-        if (listener)
-            listener->onCellChange(row, col, cell);
+    notifyOnCellChange(row, col, cell);
 }
 
 Cell* Table::getCell(const size_t row, const size_t col) const
@@ -135,6 +154,12 @@ void Table::unsubscribe(const TableObserver *listener)
     }
 }
 
+void Table::notifyOnCellChange(const size_t row, const size_t col, const Cell *cell) const
+{
+    for (const auto& listener : listeners)
+        if (listener)
+            listener->onCellChange(row, col, cell);
+}
 
 Table::~Table()
 {

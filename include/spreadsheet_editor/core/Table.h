@@ -15,10 +15,13 @@ class Table
     size_t rowsCapacity = 0, colsCapacity = 0;
     std::vector<Cell *> cells{};
 
+    size_t globalVersion = 0;
+
     std::vector<TableObserver *> listeners{};
 
     // reserves memory for the cells with new row/col capacity
     void reserve(size_t newRowCapacity, size_t newColCapacity);
+    void ensureCapacity(size_t row, size_t col);
 
 public:
     static constexpr size_t MAX_ROWS = 50;
@@ -43,8 +46,14 @@ public:
     [[nodiscard]] std::vector<Cell*> getRow(size_t row) const;
     [[nodiscard]] std::vector<Cell*> getColumn(size_t col) const;
 
+    [[nodiscard]] size_t getVersion() const { return globalVersion; };
+    void incrementVersion() { globalVersion++; };
+    void decrementVersion() { globalVersion--; };
+
     void subscribe(TableObserver *listener);
     void unsubscribe(const TableObserver *listener);
+
+    void notifyOnCellChange(size_t row, size_t col, const Cell *cell) const;
 
     ~Table();
 };

@@ -6,14 +6,6 @@
 
 class Application;
 
-
-class formula_evaluation_error final : public std::runtime_error
-{
-public:
-    explicit formula_evaluation_error(const std::string& message) : std::runtime_error{message} {}
-};
-
-
 class FormulaASTNode {
 public:
     [[nodiscard]] virtual double evaluate() const = 0;

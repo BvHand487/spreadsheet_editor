@@ -1,14 +1,13 @@
 #include "Application.h"
-#include "Table.h"
 #include "Cell.h"
 
 int main()
 {
     const Application& app = Application::getInstance();
-    Table* table = app.getActiveTable();
 
-    table->setCell(0, 0, CellFactory::create_cell_auto("1"));
-    table->setCell(0, 2, CellFactory::create_cell_auto("= R1C1 + R1C2"));
+    app.apply("edit 1 1 =r1c3");
+    app.apply("edit 1 3 =r1c2");
+    app.apply("edit 1 2 =r1c1");
 
     app.run();
 

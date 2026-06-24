@@ -1,7 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <filesystem>
 #include <functional>
 #include <vector>
 
@@ -48,8 +47,8 @@ public:
 
         [[nodiscard]] Node* findChild(const std::string& lexeme) const;
 
-        Node* addChild(const Node& node); // add child
-        bool removeChild(const Node& node); // remove child
+        Node* addChild(const Node& node);
+        bool removeChild(const Node& node);
 
         ~Node();
 

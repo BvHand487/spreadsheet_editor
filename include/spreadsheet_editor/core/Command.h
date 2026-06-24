@@ -80,7 +80,6 @@ public:
 
 class EditCellCommand final : public Command
 {
-    // TODO: maybe change type of row/column to separate classes
     Table* table;
     const size_t row;
     const size_t column;
