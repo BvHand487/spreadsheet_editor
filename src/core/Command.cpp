@@ -46,7 +46,6 @@ void HelpCommand::execute() {
 
 void QuitCommand::execute() { app.quit(); }
 
-// TODO: fix this mess
 void PrintCommand::execute()
 {
     std::ios_base::fmtflags original_flags = std::cout.flags();

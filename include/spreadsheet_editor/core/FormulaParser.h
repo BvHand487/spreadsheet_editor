@@ -17,6 +17,7 @@ class FormulaParser
     [[nodiscard]] char peek() const;
 
     bool consume(char symbol);
+    bool consumeCaseInsensitive(char symbol);
     bool consumeWhitespaces();
 
     // if outSign == true -> positive, else negative

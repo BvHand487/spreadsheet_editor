@@ -48,31 +48,34 @@ Application::Application()
     this->running = true;
 }
 
+void Application::apply(const std::string& text) const
+{
+    Command* command = cmdParser.parse(text);
+    if (command == nullptr)
+    {
+        std::cout << "Unknown command. Use \"help\" to get a full list of commands." << std::endl;
+        return;
+    }
+
+    try {
+        command->execute();
+    }
+    catch (const std::exception& err) {
+        std::cout << err.what() << std::endl;
+    }
+
+    delete command;
+}
+
 void Application::run() const
 {
-    std::string buffer;
+    std::string commandText;
     while (isRunning())
     {
         std::cout << "> " << std::flush;
-        std::getline(std::cin, buffer);
+        std::getline(std::cin, commandText);
 
-        Command* command = cmdParser.parse(buffer);
-        if (command == nullptr)
-        {
-            std::cout << "Unknown command. Use \"help\" to get a full list of commands." << std::endl;
-            continue;
-        }
-
-        try
-        {
-            command->execute();
-        }
-        catch (const std::exception& err)
-        {
-            std::cout << err.what() << std::endl;
-        }
-
-        delete command;
+        this->apply(commandText);
     }
 }
 

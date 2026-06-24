@@ -1,10 +1,13 @@
 #include <fstream>
 
 #include "TableSerializer.h"
+
+#include <iostream>
+
 #include "Utility.h"
 
 
-Table* TableSerializer::loadFromFile(const std::string &filename, char delimiter)
+Table* TableSerializer::loadFromFile(const std::string &filename, const char delimiter)
 {
     std::ifstream file(filename);
     if (!file.is_open())
@@ -29,7 +32,16 @@ Table* TableSerializer::loadFromFile(const std::string &filename, char delimiter
 
             if (c == delimiter && !inQuotes)
             {
-                table->setCell(row, col, CellFactory::create_cell_auto(token));
+                Cell* cell = nullptr;
+                try {
+                    cell = CellFactory::create_cell_auto(token);
+                }
+                catch (const std::exception &err) {
+                    delete table;
+                    throw std::format_error(std::format("Error at R{}C{}: {}", row + 1, col + 1, err.what()));
+                }
+
+                table->setCell(row, col, cell);
                 token.clear();
 
                 col++;
@@ -39,7 +51,18 @@ Table* TableSerializer::loadFromFile(const std::string &filename, char delimiter
         }
 
         if (!token.empty())
-            table->setCell(row, col, CellFactory::create_cell_auto(token));
+        {
+            Cell* cell = nullptr;
+            try {
+                cell = CellFactory::create_cell_auto(token);
+            }
+            catch (const std::exception &err) {
+                delete table;
+                throw std::format_error(std::format("Error at R{}C{}: {}", row + 1, col + 1, err.what()));
+            }
+
+            table->setCell(row, col, cell);
+        }
 
         row++;
         col = 0;
@@ -71,6 +94,5 @@ void TableSerializer::saveToFile(const Table* table, const std::string &filename
         file << '\n';
     }
 
-    file << std::endl;
     file.close();
 }

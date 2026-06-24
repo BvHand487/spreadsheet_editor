@@ -85,6 +85,9 @@ void Table::setCell(const size_t row, const size_t col, Cell *cell)
 
 Cell* Table::getCell(const size_t row, const size_t col) const
 {
+    if (row >= rows || col >= cols)
+        return nullptr;
+
     return cells[rowsCapacity * col + row];
 }
 

@@ -1,8 +1,18 @@
 #ifndef FORMULA_H
 #define FORMULA_H
 
+#include <stdexcept>
+
 
 class Application;
+
+
+class formula_evaluation_error final : public std::runtime_error
+{
+public:
+    explicit formula_evaluation_error(const std::string& message) : std::runtime_error{message} {}
+};
+
 
 class FormulaASTNode {
 public:
@@ -58,7 +68,6 @@ class FormulaCellReference final : public FormulaOperand
     size_t column{};
 
 public:
-    // TODO: maybe change evaluate to accept const Table&?
     [[nodiscard]] double evaluate() const override;
 
     FormulaCellReference(const size_t row, const size_t col) : row(row), column(col) {}

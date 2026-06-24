@@ -3,6 +3,8 @@
 #include "Application.h"
 #include "Formula.h"
 
+#include "Utility.h"
+
 
 int FormulaOperator::getPrecedence(const Type type)
 {
@@ -34,28 +36,42 @@ double FormulaOperator::evaluate() const
     if (left == nullptr || right == nullptr)
         throw std::runtime_error("Couldn't evaluate formula because of a null operand.");
 
+    const double lhs = left->evaluate();
+    const double rhs = right->evaluate();
+
     switch (type)
     {
         case Type::ADD:
-            return left->evaluate() + right->evaluate();
+            return lhs + rhs;
+
         case Type::SUB:
-            return left->evaluate() - right->evaluate();
+            return lhs - rhs;
+
         case Type::MUL:
-            return left->evaluate() * right->evaluate();
+            return lhs * rhs;
+
         case Type::DIV:
-            return left->evaluate() / right->evaluate();
+            if (approx_equals(rhs, 0.0))
+                throw formula_evaluation_error("Division by zero while evaluating formula.");
+            return lhs / rhs;
+
         case Type::EQ:
-            return left->evaluate() == right->evaluate();
+            return approx_equals(lhs, rhs);
+
         case Type::NEQ:
-            return left->evaluate() != right->evaluate();
+            return !approx_equals(lhs, rhs);
+
         case Type::LT:
-            return left->evaluate() < right->evaluate();
+            return lhs < rhs;
+
         case Type::GT:
-            return left->evaluate() > right->evaluate();
+            return lhs > rhs;
+
         case Type::LTE:
-            return left->evaluate() <= right->evaluate();
+            return lhs <= rhs;
+
         case Type::GTE:
-            return left->evaluate() >= right->evaluate();
+            return lhs >= rhs;
 
         default:
             throw std::runtime_error("Couldn't evaluate formula because of a invalid operation.");

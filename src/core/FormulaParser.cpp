@@ -23,6 +23,17 @@ bool FormulaParser::consume(const char symbol)
     return false;
 }
 
+bool FormulaParser::consumeCaseInsensitive(const char symbol)
+{
+    if (std::tolower(peek()) == std::tolower(symbol))
+    {
+        position++;
+        return true;
+    }
+
+    return false;
+}
+
 bool FormulaParser::consumeWhitespaces()
 {
     while (std::isspace(peek()))
@@ -118,13 +129,13 @@ FormulaCellReference* FormulaParser::consumeCellReference()
 {
     uint32_t row = 0, col = 0;
 
-    if (!consume('R'))
+    if (!consumeCaseInsensitive('r'))
         throw std::runtime_error("Expected a 'R' while parsing a cell reference.");
 
     if (!consumeUInt(row) || row == 0)
         throw std::runtime_error("Expected a valid row number while parsing a cell reference.");
 
-    if (!consume('C'))
+    if (!consumeCaseInsensitive('c'))
         throw std::runtime_error("Expected a 'C' while parsing a cell reference.");
 
     if (!consumeUInt(col) || col == 0)
@@ -158,7 +169,7 @@ FormulaASTNode* FormulaParser::consumeExpression()
             consumeWhitespaces();
             const char nextSymbol = peek();
 
-            if (nextSymbol == 'R') operand = consumeCellReference();
+            if (std::toupper(nextSymbol) == 'R') operand = consumeCellReference();
             else if (std::isdigit(nextSymbol) || nextSymbol == '+' || nextSymbol == '-') operand = consumeNumberLiteral();
             else
                 throw std::runtime_error("Expected an operand while parsing a formula expression.");
@@ -233,6 +244,9 @@ FormulaASTNode* FormulaParser::consumeExpression()
         while (!nodes.empty()) { delete nodes.back(); nodes.pop_back(); }
         throw;
     }
+
+    if (nodes.empty())
+        throw std::runtime_error("Expected an expression.");
 
     return nodes.back();
 }

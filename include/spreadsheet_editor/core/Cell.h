@@ -3,7 +3,6 @@
 
 #include <chrono>
 #include <string>
-#include <utility>
 
 #include "Formula.h"
 #include "FormulaParser.h"
@@ -27,6 +26,19 @@ public:
     explicit IntegerCell(const int32_t value) : value(value) {}
 
     [[nodiscard]] IntegerCell* clone() const override;
+    [[nodiscard]] double asValue() const override;
+    [[nodiscard]] std::string asString() const override;
+    [[nodiscard]] std::string serialize() const override;
+};
+
+
+class DecimalCell final : public Cell {
+    const double value = 0;
+
+public:
+    explicit DecimalCell(const double value) : value(value) {}
+
+    [[nodiscard]] DecimalCell* clone() const override;
     [[nodiscard]] double asValue() const override;
     [[nodiscard]] std::string asString() const override;
     [[nodiscard]] std::string serialize() const override;
@@ -70,19 +82,28 @@ class FormulaCell final : public Cell {
     const FormulaASTNode* formula = nullptr;
 
     mutable double cachedValue = 0;
-    mutable bool dirty = true;
+    mutable bool isDirty_ = true;
+    mutable bool isError_ = false;
 
     void refresh() const
     {
-        cachedValue = formula->evaluate();
-        dirty = false;
+        isDirty_ = false;
+        isError_ = false;
+
+        try {
+            cachedValue = formula->evaluate();
+        }
+        catch (const formula_evaluation_error&) {
+            isError_ = true;
+        }
     }
 
 public:
     explicit FormulaCell(const std::string& text) :
         representation(text),
         formula(FormulaParser::parseFormula(text)) {}
-    bool isDirty() const { return dirty == true; }
+    bool isDirty() const { return isDirty_; }
+    bool isError() const { return isError_; }
 
     [[nodiscard]] FormulaCell* clone() const override;
     [[nodiscard]] double asValue() const override;
@@ -94,16 +115,13 @@ public:
 class CellFactory
 {
 public:
-    enum Type
-    {
-        None,
-        Int,
-        String,
-        Date,
-        Formula,
-    };
 
-    static Cell* create_cell(Type type, const std::string& text);
+    template<class CellType, class... Args>
+    static Cell* create_cell(Args&&... fields)
+    {
+        return new CellType(std::forward<Args>(fields)...);
+    }
+
     static Cell* create_cell_auto(const std::string& text);
 };
 

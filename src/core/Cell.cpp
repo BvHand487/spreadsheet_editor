@@ -1,7 +1,4 @@
-#include <format>
-
 #include "Cell.h"
-#include "FormulaParser.h"
 #include "Utility.h"
 
 
@@ -12,7 +9,7 @@ IntegerCell* IntegerCell::clone() const
 
 double IntegerCell::asValue() const
 {
-    return static_cast<float>(value);
+    return value;
 };
 
 std::string IntegerCell::asString() const
@@ -26,6 +23,27 @@ std::string IntegerCell::serialize() const
 };
 
 
+DecimalCell* DecimalCell::clone() const
+{
+    return new DecimalCell(*this);
+}
+
+double DecimalCell::asValue() const
+{
+    return value;
+};
+
+std::string DecimalCell::asString() const
+{
+    return std::format("{:.2f}", value);
+}
+
+std::string DecimalCell::serialize() const
+{
+    return std::to_string(value);
+};
+
+
 StringCell* StringCell::clone() const
 {
     return new StringCell(*this);
@@ -33,8 +51,7 @@ StringCell* StringCell::clone() const
 
 double StringCell::asValue() const
 {
-    if (text.empty())
-        return 0.0;
+    if (text.empty()) return 0.0;
 
     try
     {
@@ -83,12 +100,12 @@ double DateCell::asValue() const
 
 std::string DateCell::asString() const
 {
-    return std::format("{}/{}/{}", date.day(), date.month(), date.year());
+    return std::format("{:%d/%m/%Y}", date);
 }
 
 std::string DateCell::serialize() const
 {
-    return std::format("{}/{}/{}", date.day(), date.month(), date.year());
+    return std::format("{:%d/%m/%Y}", date);
 };
 
 
@@ -99,13 +116,20 @@ FormulaCell* FormulaCell::clone() const
 
 double FormulaCell::asValue() const
 {
-    if (isDirty()) refresh();
+    if (isDirty())
+        refresh();
+
     return cachedValue;
 }
 
 std::string FormulaCell::asString() const
 {
-    if (isDirty()) refresh();
+    if (isDirty())
+        refresh();
+
+    if (isError())
+        return "ERROR";
+
     return std::format("{:.2f}", cachedValue);
 }
 
@@ -114,37 +138,60 @@ std::string FormulaCell::serialize() const
     return this->representation;
 }
 
-Cell* CellFactory::create_cell(const Type type, const std::string &text)
-{
-    switch (type)
-    {
-        case None: return nullptr;
-        case Int: return new IntegerCell(std::stoi(text));
-        case String: return new StringCell(text);
-        case Date: return new DateCell(1, 1, 1900);  // TODO
-        case Formula: return new FormulaCell(text);
-    }
-
-    return nullptr;
-}
 
 Cell* CellFactory::create_cell_auto(const std::string &text)
 {
-    if (text.empty()) return nullptr;
+    std::string trimmed = trim(text);
 
-    try
+    if (trimmed.empty())
+        return nullptr;
+
+    // try formula
+    if (trimmed.front() == '=') return create_cell<FormulaCell>(trimmed);
+
+    // try string
+    if (trimmed.front() == '\"' && trimmed.back() == '\"')
     {
-        size_t index = 0;
-        std::stoi(text, &index);
-
-        if (text.size() == index)
-            return create_cell(Int, text);
+        if (trimmed.length() > 2)
+            return create_cell<StringCell>(unescape(trimmed));
+        else
+            return nullptr;  // this allows the cell to be cleared by - edit <row> <col> ""
     }
-    catch (const std::invalid_argument& _) { };
 
-    if (text.front() == '\"' && text.back() == '\"') return create_cell(String, unescape(text));
-    // TODO: date...
-    if (text.front() == '=') return create_cell(Formula, text);
+    // try date
+    if (trimmed.find('/') != std::string::npos)
+    {
+        try
+        {
+            auto [day, month, year] = parse_date_numbers(trimmed, '/');
+            return create_cell<DateCell>(day, month, year);
+        }
+        catch (const std::invalid_argument& _)
+        {
+            throw;
+        }
+    }
 
-    return nullptr;
+    // try number
+    if ((trimmed.front() == '+' || trimmed.front() == '-') || std::isdigit(trimmed.front()))
+    {
+        try
+        {
+            size_t index = 0;
+            const double value = std::stod(trimmed, &index);
+
+            // valid number
+            if (trimmed.length() == index)
+            {
+                if (trimmed.find('.') != std::string::npos)
+                    return create_cell<DecimalCell>(value);
+
+                return create_cell<IntegerCell>(std::stoi(trimmed));
+            }
+        }
+        catch (const std::out_of_range &) { throw std::invalid_argument("Number is too large for it's data type."); }
+        catch (const std::invalid_argument&) { throw std::invalid_argument("Couldn't parse number."); }
+    }
+
+    throw std::invalid_argument(std::format("Couldn't deduce the type of \'{}\'", trimmed));
 };

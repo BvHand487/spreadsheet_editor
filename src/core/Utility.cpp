@@ -1,8 +1,12 @@
 #include "Utility.h"
 
-#include <filesystem>
 #include <sstream>
 
+
+bool approx_equals(const double a, const double b, const double epsilon)
+{
+    return std::abs(a - b) <= epsilon;
+}
 
 void split(const std::string &text, const char delimiter, std::vector<std::string> &tokens)
 {
@@ -101,6 +105,42 @@ std::string unescape(const std::string &text)
     }
 
     return result;
+}
+
+
+std::string trim(const std::string& text)
+{
+    const std::string whitespace = " \t\r\n";
+
+    const size_t firstIdx = text.find_first_not_of(whitespace);
+    if (firstIdx == std::string::npos)
+        return "";
+
+    const size_t lastIdx = text.find_last_not_of(whitespace);
+
+    return text.substr(firstIdx, lastIdx - firstIdx + 1);
+}
+
+
+// dd-mm-yyyy
+std::tuple<unsigned, unsigned, unsigned> parse_date_numbers(const std::string &text, const char delimiter)
+{
+    size_t index = 0;
+    size_t offset = 0;
+
+    unsigned day = std::stoul(text, &index);
+    if (text[offset + index++] != delimiter) throw std::invalid_argument("Unexpected character while parsing date.");
+
+    offset += index;
+
+    unsigned month = std::stoul(&text[offset], &index);
+    if (text[offset + index++] != delimiter) throw std::invalid_argument("Unexpected character while parsing date.");
+
+    offset += index;
+
+    unsigned year = std::stoul(&text[offset], &index);
+
+    return std::make_tuple(day, month, year);
 }
 
 int parse_int(const std::string &text)
