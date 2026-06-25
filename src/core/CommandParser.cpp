@@ -26,6 +26,7 @@ CommandParser::Node& CommandParser::Node::operator=(Node node)
     return *this;
 }
 
+// matches a word with one of the children of the current node
 CommandParser::Node* CommandParser::Node::findChild(const std::string &lexeme) const
 {
     // check directly
@@ -69,6 +70,7 @@ CommandParser::Node::~Node()
         delete child;
 }
 
+// collects all the commands from the tree into a list of strings
 std::vector<std::string> CommandParser::getRegisteredCommands() const
 {
     std::vector<std::string> commands;
@@ -76,15 +78,15 @@ std::vector<std::string> CommandParser::getRegisteredCommands() const
     return commands;
 }
 
+// collects all the commands from the tree recursicely
 void CommandParser::getRegisteredCommandsHelper(const Node *current, std::vector<std::string> &commands, const std::string& currentPath) const
 {
-    if (current == nullptr)
-        return;
+    if (current == nullptr) return;
 
     if (current->isTerminal())
         commands.push_back(currentPath);
 
-    for (const auto child: current->getChildren())
+    for (const auto child : current->getChildren())
     {
         std::string branch;
 
@@ -102,6 +104,7 @@ void CommandParser::registerCommand(const std::string &text, const CommandCallba
 
     for (const auto& token : tokens)
     {
+        // error if variables args are anywhere but the end
         if (current->isVariableArg())
             throw std::runtime_error(
                 std::format(

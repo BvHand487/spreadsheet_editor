@@ -8,7 +8,7 @@
 
 class FormulaParser
 {
-    std::string source;
+    std::string source{};
     size_t position = 0;
 
     [[nodiscard]] bool isValid() const { return position < source.length(); }
@@ -30,7 +30,7 @@ class FormulaParser
     FormulaASTNode* consumeExpression();
 
 public:
-    explicit FormulaParser(std::string source): source(std::move(source)) {}
+    explicit FormulaParser(std::string source): source(std::move(source)) { }
 
     static FormulaASTNode* parseFormula(const std::string& text);
 };

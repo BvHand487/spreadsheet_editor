@@ -143,29 +143,6 @@ Cell* Table::getCell(const size_t row, const size_t col) const
     return cells[rowsCapacity * col + row];
 }
 
-std::vector<Cell*> Table::getRow(const size_t row) const
-{
-    std::vector<Cell*> rowCells;
-
-    for (size_t col = 0; col < cols; col++)
-    {
-        auto cellPtr = getCell(row, col);
-        rowCells.push_back(cellPtr);
-    }
-
-    return rowCells;
-}
-
-std::vector<Cell*> Table::getColumn(const size_t col) const
-{
-    std::vector<Cell*> colCells;
-
-    for (size_t row = 0; row < rows; row++)
-        colCells.push_back(getCell(row, col));
-
-    return colCells;
-}
-
 
 void Table::subscribe(TableObserver *listener)
 {
